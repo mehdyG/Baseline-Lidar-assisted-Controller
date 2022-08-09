@@ -9,7 +9,7 @@
 
 !------- ROTOR EFFECTIVE WIND SPEED ESTIMATION ---------------------
 1                   ! AveWin_T           - The averaging time window, usually the full scan time
-0                   ! FlagMotionComp     - Flag whether the motion due to nacelle motion needs to be compensated， 0 not consider, 1 consider, (only use when the nacellemotion is delivered from the avrSWAP)
+0                   ! FlagMotionComp     - Flag whether the motion due to nacelle motion needs to be compensated， 0 not consider, 1 consider, (not implemented yet)
 
 !------- INITIAL CONDITION -----------------------------------------------------
 18                  ! Uref_Ini             - Initial hub-height Mean Wind Speed, required to provide initial REWS
