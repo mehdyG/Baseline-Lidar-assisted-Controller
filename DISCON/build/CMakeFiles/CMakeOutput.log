@@ -1,0 +1,202 @@
+The system is: Windows - 10.0.19044 - AMD64
+Compiling the Fortran compiler identification source file "CMakeFortranCompilerId.F" succeeded.
+Compiler:  
+Build flags: /W1;/nologo;/fpp;/libs:dll;/threads
+Id flags:  
+
+The output was:
+0
+
+Microsoft Visual Studio 2015 Version 14.0.25420.1.
+Copyright (C) Microsoft Corp. All rights reserved.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+1>------ Build started: Project: CompilerIdFortran, Configuration: Debug x64 ------
+1>Compiling with Intel(R) Visual Fortran Compiler 19.0.0.117 [Intel(R) 64]...
+1>CMakeFortranCompilerId.F
+1>Intel(R) Visual Fortran Intel(R) 64 Compiler for applications running on Intel(R) 64, Version 19.0.0.117 Build 20180804
+1>Copyright (C) 1985-2018 Intel Corporation.  All rights reserved.
+1>Linking...
+1>Microsoft (R) Incremental Linker Version 14.00.24215.1
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>/OUT:.\CompilerIdFortran.exe
+1>/INCREMENTAL:NO
+1>/MANIFEST
+1>/MANIFESTFILE:Debug\CompilerIdFortran.exe.intermediate.manifest
+1>"/MANIFESTUAC:level='asInvoker' uiAccess='false'"
+1>/DEBUG
+1>/PDB:F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\3.16.4\CompilerIdFortran\CompilerIdFortran.pdb
+1>/SUBSYSTEM:CONSOLE
+1>/IMPLIB:F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\3.16.4\CompilerIdFortran\CompilerIdFortran.lib
+1>Debug\CMakeFortranCompilerId.obj
+1>Embedding manifest...
+1>Performing Post-Build Event...
+1>CMAKE_Fortran_COMPILER=F:\Intel2019\XE\compilers_and_libraries_2019\windows\bin\intel64\ifort.exe
+1>
+1>Build log written to  "file://F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\3.16.4\CompilerIdFortran\Debug\BuildLog.htm"
+1>CompilerIdFortran - 0 error(s), 0 warning(s)
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+
+
+Compilation of the Fortran compiler identification source "CMakeFortranCompilerId.F" produced "CompilerIdFortran.exe"
+
+Compilation of the Fortran compiler identification source "CMakeFortranCompilerId.F" produced "CompilerIdFortran.pdb"
+
+Compilation of the Fortran compiler identification source "CMakeFortranCompilerId.F" produced "CompilerIdFortran.u2d"
+
+Compilation of the Fortran compiler identification source "CMakeFortranCompilerId.F" produced "CompilerIdFortran.vfproj"
+
+The Fortran compiler identification is Intel, found in "F:/ROSCO-master/ROSCO_LAC_10_Nov_2021/LAC_Baseline/DISCON/build/CMakeFiles/3.16.4/CompilerIdFortran/CompilerIdFortran.exe"
+
+Determining if the Fortran compiler works passed with the following output:
+Change Dir: F:/ROSCO-master/ROSCO_LAC_10_Nov_2021/LAC_Baseline/DISCON/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):F:/VS2015/Common7/IDE/devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTC_e62bb && 
+Microsoft Visual Studio 2015 Version 14.0.25420.1.
+Copyright (C) Microsoft Corp. All rights reserved.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+1>------ Build started: Project: cmTC_e62bb, Configuration: Debug x64 ------
+1>Compiling with Intel(R) Visual Fortran Compiler 19.0.0.117 [Intel(R) 64]...
+1>testFortranCompiler.f
+1>Compiling manifest to resources...
+1>Microsoft (R) Windows (R) Resource Compiler Version 10.0.10011.16384
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>Linking...
+1>Microsoft (R) Incremental Linker Version 14.00.24215.1
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>/OUT:F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\Debug\cmTC_e62bb.exe
+1>/VERSION:0.0
+1>/MANIFEST
+1>/MANIFESTFILE:cmTC_e62bb.dir\Debug\cmTC_e62bb.exe.intermediate.manifest
+1>"/MANIFESTUAC:level='asInvoker' uiAccess='false'"
+1>/DEBUG
+1>/PDB:F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\Debug/cmTC_e62bb.pdb
+1>/SUBSYSTEM:CONSOLE
+1>/IMPLIB:F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\Debug\cmTC_e62bb.lib
+1>user32.lib
+1>/machine:x64
+1>/debug
+1>/INCREMENTAL
+1>cmTC_e62bb.dir\Debug\testFortranCompiler.obj
+1>cmTC_e62bb.dir\Debug\cmTC_e62bb.exe.embed.manifest.res
+1>Embedding manifest...
+1>Microsoft (R) Manifest Tool
+1>Copyright (c) Microsoft Corporation.
+1>All rights reserved.
+1>
+1>Build log written to  "file://F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\cmTC_e62bb.dir\Debug\BuildLog.htm"
+1>cmTC_e62bb - 0 error(s), 0 warning(s)
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+
+
+
+Detecting Fortran compiler ABI info compiled with the following output:
+Change Dir: F:/ROSCO-master/ROSCO_LAC_10_Nov_2021/LAC_Baseline/DISCON/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):F:/VS2015/Common7/IDE/devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTC_cf19e && 
+Microsoft Visual Studio 2015 Version 14.0.25420.1.
+Copyright (C) Microsoft Corp. All rights reserved.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+1>------ Build started: Project: cmTC_cf19e, Configuration: Debug x64 ------
+1>Compiling with Intel(R) Visual Fortran Compiler 19.0.0.117 [Intel(R) 64]...
+1>CMakeFortranCompilerABI.F
+1>Compiling manifest to resources...
+1>Microsoft (R) Windows (R) Resource Compiler Version 10.0.10011.16384
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>Linking...
+1>Microsoft (R) Incremental Linker Version 14.00.24215.1
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>/OUT:F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\Debug\cmTC_cf19e.exe
+1>/VERSION:0.0
+1>/MANIFEST
+1>/MANIFESTFILE:cmTC_cf19e.dir\Debug\cmTC_cf19e.exe.intermediate.manifest
+1>"/MANIFESTUAC:level='asInvoker' uiAccess='false'"
+1>/DEBUG
+1>/PDB:F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\Debug/cmTC_cf19e.pdb
+1>/SUBSYSTEM:CONSOLE
+1>/IMPLIB:F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\Debug\cmTC_cf19e.lib
+1>/machine:x64
+1>/debug
+1>/INCREMENTAL
+1>cmTC_cf19e.dir\Debug\CMakeFortranCompilerABI.obj
+1>cmTC_cf19e.dir\Debug\cmTC_cf19e.exe.embed.manifest.res
+1>Embedding manifest...
+1>Microsoft (R) Manifest Tool
+1>Copyright (c) Microsoft Corporation.
+1>All rights reserved.
+1>
+1>Build log written to  "file://F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\cmTC_cf19e.dir\Debug\BuildLog.htm"
+1>cmTC_cf19e - 0 error(s), 0 warning(s)
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+
+
+
+Determining if the Fortran compiler supports Fortran 90 passed with the following output:
+Change Dir: F:/ROSCO-master/ROSCO_LAC_10_Nov_2021/LAC_Baseline/DISCON/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):F:/VS2015/Common7/IDE/devenv.com CMAKE_TRY_COMPILE.sln /build Debug /project cmTC_f3deb && 
+Microsoft Visual Studio 2015 Version 14.0.25420.1.
+Copyright (C) Microsoft Corp. All rights reserved.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+
+Package 'IFLangServicePackage' failed to load.
+1>------ Build started: Project: cmTC_f3deb, Configuration: Debug x64 ------
+1>Compiling with Intel(R) Visual Fortran Compiler 19.0.0.117 [Intel(R) 64]...
+1>testFortranCompilerF90.f90
+1>Compiling manifest to resources...
+1>Microsoft (R) Windows (R) Resource Compiler Version 10.0.10011.16384
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>Linking...
+1>Microsoft (R) Incremental Linker Version 14.00.24215.1
+1>Copyright (C) Microsoft Corporation.  All rights reserved.
+1>/OUT:F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\Debug\cmTC_f3deb.exe
+1>/VERSION:0.0
+1>/MANIFEST
+1>/MANIFESTFILE:cmTC_f3deb.dir\Debug\cmTC_f3deb.exe.intermediate.manifest
+1>"/MANIFESTUAC:level='asInvoker' uiAccess='false'"
+1>/DEBUG
+1>/PDB:F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\Debug/cmTC_f3deb.pdb
+1>/SUBSYSTEM:CONSOLE
+1>/IMPLIB:F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\Debug\cmTC_f3deb.lib
+1>user32.lib
+1>/machine:x64
+1>/debug
+1>/INCREMENTAL
+1>cmTC_f3deb.dir\Debug\testFortranCompilerF90.obj
+1>cmTC_f3deb.dir\Debug\cmTC_f3deb.exe.embed.manifest.res
+1>Embedding manifest...
+1>Microsoft (R) Manifest Tool
+1>Copyright (c) Microsoft Corporation.
+1>All rights reserved.
+1>
+1>Build log written to  "file://F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\DISCON\build\CMakeFiles\CMakeTmp\cmTC_f3deb.dir\Debug\BuildLog.htm"
+1>cmTC_f3deb - 0 error(s), 0 warning(s)
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+
+
+

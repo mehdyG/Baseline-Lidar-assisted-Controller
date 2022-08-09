@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="F:\ROSCO-master\ROSCO_LAC_10_Nov_2021\LAC_Baseline\LDP\build\CMakeFiles\23c0db90599fe3fc50984eb2abbe4659\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{83DB3D77-472A-3A89-933C-E64EAFCACEDC}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
