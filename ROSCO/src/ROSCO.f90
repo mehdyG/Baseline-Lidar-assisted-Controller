@@ -13,7 +13,7 @@
 ! High level run script
 
 !=======================================================================
-SUBROUTINE ROSCO(avrSWAP, aviFAIL, accINFILE, avcOUTNAME, avcMSG)  !BIND (C, NAME='ROSCO')
+SUBROUTINE ROSCO(avrSWAP, aviFAIL, accINFILE, avcOUTNAME, avcMSG)  BIND (C, NAME='ROSCO')
 ! DO NOT REMOVE or MODIFY LINES starting with "!DEC$" or "!GCC$"
 ! !DEC$ specifies attributes for IVF and !GCC$ specifies attributes for gfortran
 
