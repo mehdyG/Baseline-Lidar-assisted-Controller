@@ -10,6 +10,13 @@
 ! specific language governing permissions and limitations under the License.
 ! -------------------------------------------------------------------------------------------
 
+! The pitch controller is modified to accept the pitch forward pitch signal
+! by Feng Guo  Flensburg University of Applied Sciences, funded by LIKE -- Lidar Knowledge Europe, grant agreement No. 858358.   
+! Target: This code aims to provide a reference Lidar-assisted control package for the community. Please cite the following paper if this code is helpful for your research:
+! Guo, F., Schlipf, D., and Cheng, P. W.: Evaluation of lidar-assisted wind turbine control under various turbulence characteristics, Wind Energ. Sci. Discuss.
+! [preprint], https://doi.org/10.5194/wes-2022-62, in review, 2022.    
+
+
 ! High level run script
 
 !=======================================================================
