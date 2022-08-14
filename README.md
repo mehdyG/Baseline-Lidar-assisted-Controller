@@ -17,10 +17,10 @@ Target: This code aims to provide a reference Lidar-assisted control package for
 ! Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
 
 # How to Compile
-The visual studio project (compatiable to Visual Studio 2015) is included in the "build" folder. 
-Please use Cmake to generate visual studio project for other versions of Visual Studio.
+The visual studio project (compatiable to Visual Studio 2015) is included in the "build" folder. The complication has been tested with Visual Studio 2015 and Fortran 2019 complier.
+If you are using other versions of Visual Studio, please use Cmake to generate visual studio project. The Cmake files have been included.
 
-The pre-compiled DLLs in the "Release" folder are compiled using Visual Studio 2015 and Fortran 2019. If your system report the error that the DLL file could not be found, installing Visual Studio 2015 or newer version may solve the issue.
+The pre-compiled DLLs in the "Release" folder are compiled using Visual Studio 2015 and Fortran complier 2019. If your system report the error that the DLL file could not be found, installing Visual Studio 2015 or newer version may solve the issue.
 
 
 
