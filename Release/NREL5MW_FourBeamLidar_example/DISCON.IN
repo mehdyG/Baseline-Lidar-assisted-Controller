@@ -6,6 +6,6 @@
 "LDP_IN.IN"          ! SubDLLInputName   = The name of the sub DLL input parameter file name
 "FFP.dll"         ! SubDLLName        = The name of the sub DLL to be called (lidar data processing and Fitch forward rate for control)
 "FFP_IN.IN"          ! SubDLLInputName   = The name of the sub DLL input parameter file name
-"ROSCO.dll"         ! SubDLLName        = The name of the sub DLL to be called (lidar data processing and Fitch forward rate for control)
-"ROSCO.IN"          ! SubDLLInputName   = The name of the sub DLL input parameter file name
+"ROSCO2d6.dll"         ! SubDLLName        = The name of the sub DLL to be called (lidar data processing and Fitch forward rate for control)
+"ROSCO2.IN"          ! SubDLLInputName   = The name of the sub DLL input parameter file name
 
