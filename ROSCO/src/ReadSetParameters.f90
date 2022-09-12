@@ -56,10 +56,14 @@ CONTAINS
 
         ! FG: added for Lidar assisted control
         L                           = NINT(avrSWAP(63)) 
-        LocalVar%REWS               = avrSWAP(L + 2 + NINT(avrSWAP(L+ 2)) + 7) !avrSWAP(L+ 2) gates per beam
-        LocalVar%REWS_b             = avrSWAP(L + 2 + NINT(avrSWAP(L+ 2)) + 8) !avrSWAP(L+ 2) gates per beam
-        LocalVar%FF_PitchRate       = avrSWAP(L + 2 + NINT(avrSWAP(L+ 2)) + 9) !avrSWAP(L+ 2) gates per beam
+        LocalVar%REWS               = avrSWAP(L + 2 + NINT(avrSWAP(L+ 2)) + 7) 	!avrSWAP(L+ 2) gates per beam
+        LocalVar%REWS_b             = avrSWAP(L + 2 + NINT(avrSWAP(L+ 2)) + 8) 	!avrSWAP(L+ 2) gates per beam
+        LocalVar%FF_PitchRate       = avrSWAP(L + 2 + NINT(avrSWAP(L+ 2)) + 9) 	!avrSWAP(L+ 2) gates per beam
         LocalVar%REWS_f             = avrSWAP(L + 2 + NINT(avrSWAP(L+ 2)) + 10) !avrSWAP(L+ 2) gates per beam
+		
+				
+		! DS: initialize last pitch command for rate limitations
+		LocalVar%PC_PitComT_Last  	= avrSWAP(4)
         
         
         ! --- NJA: usually feedback back the previous pitch command helps for numerical stability, sometimes it does not...
