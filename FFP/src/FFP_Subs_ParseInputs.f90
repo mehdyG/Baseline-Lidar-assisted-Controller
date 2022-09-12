@@ -1,183 +1,15 @@
-! Name:   		Master (wrapper) DLL.
-! Authors: 		Feng Guo, David Schlipf from Flensburg University of Applied Sciences, funded by LIKE -- Lidar Knowledge Europe, grant agreement No. 858358.   
-! Target: 		This code aims to provide a reference Lidar-assisted control package for the community. Please cite the following paper if this code is helpful for your research:
-! 				Guo, F., Schlipf, D., and Cheng, P. W.: Evaluation of lidar-assisted wind turbine control under various turbulence characteristics, Wind Energ. Sci. Discuss.
-! 				[preprint], https://doi.org/10.5194/wes-2022-62, in review, 2022.    
-! Function: 	The DLL chain is designed to make the lidar data processing or other algorithms more independent from the feedback controller. 
-! 				It allows a more flexible design of additional algorithms which meet the requirement of a "smart lidar" concept (https://zenodo.org/record/5004524#.Yevsp_7MKUk)
-! Reference:	The subroutines rely on the legacy Bladed style data interface. See the Bladed manual for more detail.    
-! 				The code is written based on the source code of ROSCO. Version 2.4.1, https://github.com/NREL/ROSCO, 2021. by NREL.
-! License: 		MIT License
-! Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
-! -------------------------------------------------------------------------------------------
-
-MODULE DLLChain_Subs
-
-    USE, INTRINSIC :: ISO_C_Binding
-    USE            :: DLLChain_Types
-    
-    IMPLICIT NONE
-
-    ! Global Variables
-    LOGICAL, PARAMETER     		:: DEBUG_PARSING = .FALSE.      ! debug flag to output parsing information, set up Echo file later
-    CHARACTER(*),  PARAMETER    :: NewLine     = ACHAR(10)  	! The delimiter for New Lines [ Windows is CHAR(13)//CHAR(10); MAC is CHAR(13); Unix is CHAR(10) {CHAR(13)=\r is a line feed, CHAR(10)=\n is a new line}]
-    
-    INTERFACE ParseInput                                     	! Parses a character variable name and value from a string.
-        MODULE PROCEDURE ParseInput_Str                      	! Parses a character string from a string.
-        MODULE PROCEDURE ParseInput_Dbl                       	! Parses a double-precision REAL from a string.
-        MODULE PROCEDURE ParseInput_Int                    		! Parses an INTEGER from a string.
-    END INTERFACE
-    
-
-
-
-CONTAINS
- ! ----------------------------------------------------------------------------------- 
-! -----------------------------------------------------------------------------------
-    ! Get the sub DLL information 
-    SUBROUTINE SetDLLParameters(avrSWAP, accINFILE, size_avcMSG, DLL_Type, DLL_ErrVar)
-        USE DLLChain_Types
-        
-        REAL(C_FLOAT),              INTENT(INOUT)    		:: avrSWAP(*)          ! The swap array, used to pass data to, and receive data from, the DLL controller.
-        CHARACTER(C_CHAR),          INTENT(IN   )    		:: accINFILE(NINT(avrSWAP(50)))     ! The name of the parameter input file
-
-        INTEGER(4),                 INTENT(IN   )   		:: size_avcMSG
-        TYPE(DLLErrorVariables),           INTENT(INOUT) 	:: DLL_ErrVar
-        TYPE(DLLChainParameter_Types),     INTENT(INOUT)   	:: DLL_Type
-
-        
-        INTEGER(4)                              			:: iStatus ! the status of the DLL chain calling, 0 means first call
-        
-        CHARACTER(*),               PARAMETER       		:: RoutineName = 'SetDLLParameters'
-
-        
-        iStatus            = NINT(avrSWAP(1))
-
-        ! Set ErrVar%aviFAIL to 0 in each iteration:
-        DLL_ErrVar%aviFAIL = 0
-        ! ALLOCATE(ErrVar%ErrMsg(size_avcMSG-1))
-        DLL_ErrVar%size_avcMSG  = size_avcMSG
-        
-        
-        ! Read any External DLL Parameters specified in the User Interface
-        !   and initialize variables:
-        IF (iStatus == 0) THEN ! .TRUE. if we're on the first call to the DLL
-            
-            
-            ! Description:
-            print *, '--------------------------------------------------------------------'
-            print *, 'A DLL chain for developing lidar-assisted control algorithms'
-            print *, 'Developed by Flensburg University of Applied Sciences, Germany'
-            print *, '--------------------------------------------------------------------'    
-
-            CALL ReadDLLParameterFileSub(DLL_Type,accINFILE, NINT(avrSWAP(50)),DLL_ErrVar)
-            
-            ! If there's been an file reading error, don't continue
-            ! Add RoutineName to error message
-            IF (DLL_ErrVar%aviFAIL < 0) THEN
-                DLL_ErrVar%ErrMsg = RoutineName//':'//TRIM(DLL_ErrVar%ErrMsg)
-                RETURN
-            ENDIF
-
-            
-
-        ENDIF
-    END SUBROUTINE SetDLLParameters
-    
-    ! -----------------------------------------------------------------------------------
-    ! Read all constant control parameters from DISCON.IN parameter file
-    SUBROUTINE ReadDLLParameterFileSub(DLL_Type,accINFILE, accINFILE_size,DLL_ErrVar)!, accINFILE_size)
-        USE, INTRINSIC :: ISO_C_Binding
-        USE DLLChain_Types, ONLY : DLLErrorVariables
-        
-        INTEGER(4)                                      :: accINFILE_size               ! size of DISCON input filename
-        CHARACTER(accINFILE_size),  INTENT(IN   )       :: accINFILE(accINFILE_size)    ! DISCON input filename
-        TYPE(DLLChainParameter_Types),        INTENT(INOUT)       :: DLL_Type
-
-        TYPE(DLLErrorVariables),       INTENT(INOUT)       :: DLL_ErrVar             	! Control parameter type
-
-        INTEGER(4),                 PARAMETER           :: UnControllerParameters = 89  ! Unit number to open file
-        INTEGER(4)                                      :: CurLine 
-        INTEGER(4)                                      :: ppos             			! index to remove file extension
-        INTEGER(4)                                      :: stringlength     			! length of a string
-        INTEGER(4)                                      :: iDLL                 		! counter  
- 
-        CHARACTER(*),               PARAMETER           :: RoutineName = 'ReadDLLParameterFileSub'
-
-        CurLine = 1
-       
-
-        OPEN(unit=UnControllerParameters, file=accINFILE(1), status='old', action='read')
-        
-        !----------------------- HEADER ------------------------
-        CALL ReadEmptyLine(UnControllerParameters,CurLine)
-        CALL ReadEmptyLine(UnControllerParameters,CurLine)
-        CALL ReadEmptyLine(UnControllerParameters,CurLine)
-
-        !----------------------- NumberOfsubDLLs ------------------------
-        CALL ParseInput(UnControllerParameters,CurLine,'NumberofSubDLLs',accINFILE(1),DLL_Type%NumberOfsubDLLs,DLL_ErrVar)
-        
-        
-        IF (.not. allocated(DLL_TYPE%PROCADDR)) THEN 
-            ALLOCATE(DLL_TYPE%PROCADDR(DLL_Type%NumberOfsubDLLs))
-        END IF
-        
-        IF (.not. allocated(DLL_TYPE%DLLFILENAME)) THEN 
-            ALLOCATE(DLL_TYPE%DLLFILENAME(DLL_Type%NumberOfsubDLLs))
-        END IF
-        
-        IF (.not. allocated(DLL_TYPE%DLLINPUTFILENAME)) THEN 
-            ALLOCATE(DLL_TYPE%DLLINPUTFILENAME(DLL_Type%NumberOfsubDLLs))
-        END IF
-        
-        IF (.not. allocated(DLL_TYPE%PROCNAME)) THEN 
-            ALLOCATE(DLL_TYPE%PROCNAME(DLL_Type%NumberOfsubDLLs))
-        END IF
-        
-        ! LOOP to get all DLL names and DLL input names
-        DO iDLL=1, DLL_Type%NumberOfsubDLLs
-			CALL ParseInput(UnControllerParameters,CurLine,'SubDLLName',     accINFILE(1),DLL_TYPE%DLLFILENAME(iDLL),     DLL_ErrVar)
-			CALL ParseInput(UnControllerParameters,CurLine,'SubDLLInputName',accINFILE(1),DLL_TYPE%DLLINPUTFILENAME(iDLL),DLL_ErrVar)
-			ppos = SCAN(TRIM(DLL_TYPE%DLLFILENAME(iDLL)),".", BACK= .true.)
-			DLL_TYPE%PROCNAME(iDLL) = DLL_TYPE%DLLFILENAME(iDLL)(1:ppos-1)
-             
-            IF (len_trim( DLL_TYPE%PROCNAME(iDLL))==0) THEN
-                DLL_ErrVar%ErrMsg = RoutineName//':'//'Error reading the DISCON.IN, the number of sub DLLs does not match with the lines in the DISCON.IN file, check the DISCON.IN is correctly set up.'
-                print * , TRIM(DLL_ErrVar%ErrMsg)
-                DLL_ErrVar%aviFAIL = -1
-            RETURN
-            END IF
-
-        END DO    
-        
-        
-        ! Close Input File
-        CLOSE(UnControllerParameters)
-
-        
-
-        ! Add RoutineName to error message
-        IF (DLL_ErrVar%aviFAIL < 0) THEN
-            DLL_ErrVar%ErrMsg = RoutineName//':'//TRIM(DLL_ErrVar%ErrMsg)
-        ENDIF
-
-    END SUBROUTINE ReadDLLParameterFileSub
-    ! -----------------------------------------------------------------------------------
- 	!============================================================================================================================================== 
-	! Below this line, the file I/O related routines are copied from ROSCO    
-    !==============================================================================================================================================        
     !=======================================================================
     ! Parse integer input: read line, check that variable name is in line, handle errors
     ! the ParseInput is copied from the ROSCO_Types
     subroutine ParseInput_Int(Un, CurLine, VarName, FileName, Variable, ErrVar, CheckName)
-        USE DLLChain_Types, ONLY : DLLErrorVariables
+        USE FFP_Types, ONLY : LidarErrorVariables
 
         CHARACTER(1024)                         :: Line
         INTEGER(4),             INTENT(IN   )   :: Un   ! Input file unit
         CHARACTER(*),           INTENT(IN   )   :: VarName   ! Input file unit
         CHARACTER(*),           INTENT(IN   )   :: FileName   ! Input file unit
         INTEGER(4),             INTENT(INOUT)   :: CurLine   ! Current line of input
-        TYPE(DLLErrorVariables),   INTENT(INOUT)   :: ErrVar   ! Current line of input
+        TYPE(LidarErrorVariables),   INTENT(INOUT)   :: ErrVar   ! Current line of input
         CHARACTER(20)                           :: Words       (2)               ! The two "words" parsed from the line
 
         INTEGER(4),             INTENT(INOUT)   :: Variable   ! Variable
@@ -234,14 +66,14 @@ CONTAINS
     !=======================================================================
     ! Parse double input, this is a copy of ParseInput_Int and a change in the variable definitions
     subroutine ParseInput_Dbl(Un, CurLine, VarName, FileName, Variable, ErrVar, CheckName)
-        USE DLLChain_Types, ONLY : DLLErrorVariables
+        USE FFP_Types, ONLY : LidarErrorVariables
 
         CHARACTER(1024)                         :: Line
         INTEGER(4),             INTENT(IN   )   :: Un   ! Input file unit
         CHARACTER(*),           INTENT(IN   )   :: VarName   ! Input file unit
         CHARACTER(*),           INTENT(IN   )   :: FileName   ! Input file unit
         INTEGER(4),             INTENT(INOUT)   :: CurLine   ! Current line of input
-        TYPE(DLLErrorVariables),   INTENT(INOUT)   :: ErrVar   ! Current line of input
+        TYPE(LidarErrorVariables),   INTENT(INOUT)   :: ErrVar   ! Current line of input
         CHARACTER(20)                           :: Words       (2)               ! The two "words" parsed from the line
         LOGICAL, OPTIONAL,      INTENT(IN   )   :: CheckName
 
@@ -298,14 +130,14 @@ CONTAINS
     !=======================================================================
     ! Parse string input, this is a copy of ParseInput_Int and a change in the variable definitions
     subroutine ParseInput_Str(Un, CurLine, VarName, FileName, Variable, ErrVar, CheckName)
-        USE DLLChain_Types, ONLY : DLLErrorVariables
+        USE FFP_Types, ONLY : LidarErrorVariables
 
         CHARACTER(1024)                         :: Line
         INTEGER(4),             INTENT(IN   )   :: Un   ! Input file unit
         CHARACTER(*),           INTENT(IN   )   :: VarName   ! Input file unit
         CHARACTER(*),           INTENT(IN   )   :: FileName   ! Input file unit
         INTEGER(4),             INTENT(INOUT)   :: CurLine   ! Current line of input
-        TYPE(DLLErrorVariables),   INTENT(INOUT)   :: ErrVar   ! Current line of input
+        TYPE(LidarErrorVariables),   INTENT(INOUT)   :: ErrVar   ! Current line of input
         CHARACTER(200)                          :: Words       (2)               ! The two "words" parsed from the line
         LOGICAL, OPTIONAL,      INTENT(IN   )   :: CheckName
 
@@ -359,6 +191,259 @@ CONTAINS
 
     END subroutine ParseInput_Str
     
+	!=======================================================================
+	!> This subroutine parses the specified line of text for AryLen REAL values.
+	!! Generate an error message if the value is the wrong type.
+	!! Use ParseAry (nwtc_io::parseary) instead of directly calling a specific routine in the generic interface.   
+    SUBROUTINE ParseDbAry ( Un, LineNum, AryName, Ary, AryLen, FileName, ErrVar, CheckName )
+
+        USE FFP_Types, ONLY : LidarErrorVariables
+
+        ! Arguments declarations.
+        INTEGER(4),             INTENT(IN   )   :: Un   ! Input file unit
+        INTEGER,                INTENT(IN   )   :: AryLen                        !< The length of the array to parse.
+
+        REAL(8), ALLOCATABLE,   INTENT(INOUT)   :: Ary(:)            !< The array to receive the input values.
+
+        INTEGER(4),             INTENT(INOUT)   :: LineNum                       !< The number of the line to parse.
+        CHARACTER(*),           INTENT(IN)      :: FileName                      !< The name of the file being parsed.
+
+
+        CHARACTER(*),           INTENT(IN   )   :: AryName                       !< The array name we are trying to fill.
+
+        TYPE(LidarErrorVariables),   INTENT(INOUT)   :: ErrVar   ! Current line of input
+
+        LOGICAL, OPTIONAL,      INTENT(IN   )   :: CheckName
+
+
+        ! Local declarations.
+
+        CHARACTER(1024)                         :: Line
+        INTEGER(4)                              :: ErrStatLcl                    ! Error status local to this routine.
+        INTEGER(4)                              :: i
+
+        CHARACTER(200), ALLOCATABLE             :: Words_Ary       (:)               ! The array "words" parsed from the line.
+        CHARACTER(1024)                         :: Debug_String 
+        CHARACTER(*), PARAMETER                 :: RoutineName = 'ParseDbAry'
+        LOGICAL                                 :: CheckName_
+
+        ! Figure out if we're checking the name, default to .TRUE.
+        CheckName_ = .TRUE.
+        if (PRESENT(CheckName)) CheckName_ = CheckName 
+
+        ! If we've already failed, don't read anything
+        IF (ErrVar%aviFAIL >= 0) THEN
+            ! Read the whole line as a string
+            READ(Un, '(A)') Line
+
+            ! Allocate array and handle errors
+            ALLOCATE ( Ary(AryLen) , STAT=ErrStatLcl )
+            IF ( ErrStatLcl /= 0 ) THEN
+                IF ( ALLOCATED(Ary) ) THEN
+                    ErrVar%aviFAIL = -1
+                    ErrVar%ErrMsg = RoutineName//':Error allocating memory for the '//TRIM( AryName )//' array; array was already allocated.'
+                ELSE
+                    ErrVar%aviFAIL = -1
+                    ErrVar%ErrMsg = RoutineName//':Error allocating memory for '//TRIM(Int2LStr( AryLen ))//' characters in the '//TRIM( AryName )//' array.'
+                END IF
+            END IF
+        
+            ! Allocate words array
+            ALLOCATE ( Words_Ary( AryLen + 1 ) , STAT=ErrStatLcl )
+            IF ( ErrStatLcl /= 0 )  THEN
+                ErrVar%aviFAIL = -1
+                ErrVar%ErrMsg = RoutineName//':Fatal error allocating memory for the Words array.'
+                CALL Cleanup()
+                RETURN
+            ENDIF
+
+            ! Separate line string into AryLen + 1 words, should include variable name
+            CALL GetWords ( Line, Words_Ary, AryLen + 1 )  
+
+            ! Debug Output
+            IF (DEBUG_PARSING) THEN
+                Debug_String = ''
+                DO i = 1,AryLen+1
+                    Debug_String = TRIM(Debug_String)//TRIM(Words_Ary(i))
+                    IF (i < AryLen + 1) THEN
+                        Debug_String = TRIM(Debug_String)//','
+                    END IF
+                END DO
+                print *, 'Read: '//TRIM(Debug_String)//' on line ', LineNum
+            END IF
+
+            ! Check that Variable Name is at the end of Words, will also check length of array
+            IF (CheckName_) THEN
+                CALL ChkParseData ( Words_Ary(AryLen:AryLen+1), AryName, FileName, LineNum, ErrVar )
+            END IF
+        
+            ! Read array
+            READ (Line,*,IOSTAT=ErrStatLcl)  Ary
+            IF ( ErrStatLcl /= 0 )  THEN
+                ErrVar%aviFAIL = -1
+                ErrVar%ErrMsg = RoutineName//':A fatal error occurred when parsing data from "' &
+                                //TRIM( FileName )//'".'//NewLine//  &
+                                ' >> The "'//TRIM( AryName )//'" array was not assigned valid REAL values on line #' &
+                                //TRIM( Int2LStr( LineNum ) )//'.'//NewLine//' >> The text being parsed was :'//NewLine &
+                                //'    "'//TRIM( Line )//'"' 
+                RETURN
+                CALL Cleanup()         
+            ENDIF
+
+        !  IF ( PRESENT(UnEc) )  THEN
+        !     IF ( UnEc > 0 )  WRITE (UnEc,'(A)')  TRIM( FileInfo%Lines(LineNum) )
+        !  END IF
+
+            LineNum = LineNum + 1
+            CALL Cleanup()
+        ENDIF
+
+        RETURN
+
+        !=======================================================================
+        CONTAINS
+        !=======================================================================
+            SUBROUTINE Cleanup ( )
+
+                ! This subroutine cleans up the parent routine before exiting.
+
+                ! Deallocate the Words array if it had been allocated.
+
+                IF ( ALLOCATED( Words_Ary ) ) DEALLOCATE( Words_Ary )
+
+
+                RETURN
+
+            END SUBROUTINE Cleanup
+
+	END SUBROUTINE ParseDbAry
+
+	!=======================================================================
+	!> This subroutine parses the specified line of text for AryLen INTEGER values.
+	!! Generate an error message if the value is the wrong type.
+	!! Use ParseAry (nwtc_io::parseary) instead of directly calling a specific routine in the generic interface.   
+	SUBROUTINE ParseInAry ( Un, LineNum, AryName, Ary, AryLen, FileName, ErrVar, CheckName )
+
+    USE FFP_Types, ONLY : LidarErrorVariables
+
+    ! Arguments declarations.
+    INTEGER(4),             INTENT(IN   )   :: Un   ! Input file unit
+    INTEGER,                INTENT(IN   )   :: AryLen                        !< The length of the array to parse.
+
+    INTEGER(4), ALLOCATABLE,   INTENT(INOUT)   :: Ary(:)            !< The array to receive the input values.
+
+    INTEGER(4),             INTENT(INOUT)   :: LineNum                       !< The number of the line to parse.
+    CHARACTER(*),           INTENT(IN)      :: FileName                      !< The name of the file being parsed.
+
+
+    CHARACTER(*),           INTENT(IN   )   :: AryName                       !< The array name we are trying to fill.
+
+    TYPE(LidarErrorVariables),   INTENT(INOUT)   :: ErrVar   ! Current line of input
+
+    LOGICAL, OPTIONAL,      INTENT(IN   )   :: CheckName
+
+    ! Local declarations.
+
+    CHARACTER(1024)                         :: Line
+    INTEGER(4)                              :: ErrStatLcl                    ! Error status local to this routine.
+    INTEGER(4)                              :: i
+
+    CHARACTER(200), ALLOCATABLE             :: Words_Ary       (:)               ! The array "words" parsed from the line.
+    CHARACTER(1024)                         :: Debug_String 
+    CHARACTER(*), PARAMETER                 :: RoutineName = 'ParseInAry'
+
+    LOGICAL                                 :: CheckName_
+
+    ! Figure out if we're checking the name, default to .TRUE.
+    CheckName_ = .TRUE.
+    if (PRESENT(CheckName)) CheckName_ = CheckName    
+
+    ! If we've already failed, don't read anything
+    IF (ErrVar%aviFAIL >= 0) THEN
+        ! Read the whole line as a string
+        READ(Un, '(A)') Line
+
+        ! Allocate array and handle errors
+        ALLOCATE ( Ary(AryLen) , STAT=ErrStatLcl )
+        IF ( ErrStatLcl /= 0 ) THEN
+            IF ( ALLOCATED(Ary) ) THEN
+                ErrVar%aviFAIL = -1
+                ErrVar%ErrMsg = RoutineName//':Error allocating memory for the '//TRIM( AryName )//' array; array was already allocated.'
+            ELSE
+                ErrVar%aviFAIL = -1
+                ErrVar%ErrMsg = RoutineName//':Error allocating memory for '//TRIM(Int2LStr( AryLen ))//' characters in the '//TRIM( AryName )//' array.'
+            END IF
+        END IF
+    
+        ! Allocate words array
+        ALLOCATE ( Words_Ary( AryLen + 1 ) , STAT=ErrStatLcl )
+        IF ( ErrStatLcl /= 0 )  THEN
+            ErrVar%aviFAIL = -1
+            ErrVar%ErrMsg = RoutineName//':Fatal error allocating memory for the Words array.'
+            CALL Cleanup()
+            RETURN
+        ENDIF
+
+        ! Separate line string into AryLen + 1 words, should include variable name
+        CALL GetWords ( Line, Words_Ary, AryLen + 1 )  
+
+        ! Debug Output
+        IF (DEBUG_PARSING) THEN
+            Debug_String = ''
+            DO i = 1,AryLen+1
+                Debug_String = TRIM(Debug_String)//TRIM(Words_Ary(i))
+                IF (i < AryLen + 1) THEN
+                    Debug_String = TRIM(Debug_String)//','
+                END IF
+            END DO
+            print *, 'Read: '//TRIM(Debug_String)//' on line ', LineNum
+        END IF
+
+        ! Check that Variable Name is at the end of Words, will also check length of array
+        IF (CheckName_) THEN
+            CALL ChkParseData ( Words_Ary(AryLen:AryLen+1), AryName, FileName, LineNum, ErrVar )
+        END IF
+    
+        ! Read array
+        READ (Line,*,IOSTAT=ErrStatLcl)  Ary
+        IF ( ErrStatLcl /= 0 )  THEN
+            ErrVar%aviFAIL = -1
+            ErrVar%ErrMsg = RoutineName//':A fatal error occurred when parsing data from "' &
+                            //TRIM( FileName )//'".'//NewLine//  &
+                            ' >> The "'//TRIM( AryName )//'" array was not assigned valid REAL values on line #' &
+                            //TRIM( Int2LStr( LineNum ) )//'.'//NewLine//' >> The text being parsed was :'//NewLine &
+                            //'    "'//TRIM( Line )//'"' 
+            RETURN
+            CALL Cleanup()         
+        ENDIF
+
+    !  IF ( PRESENT(UnEc) )  THEN
+    !     IF ( UnEc > 0 )  WRITE (UnEc,'(A)')  TRIM( FileInfo%Lines(LineNum) )
+    !  END IF
+
+        LineNum = LineNum + 1
+        CALL Cleanup()
+    ENDIF
+
+    RETURN
+
+    !=======================================================================
+    CONTAINS
+    !=======================================================================
+        SUBROUTINE Cleanup ( )
+
+            ! This subroutine cleans up the parent routine before exiting.
+
+            ! Deallocate the Words array if it had been allocated.
+
+            IF ( ALLOCATED( Words_Ary ) ) DEALLOCATE( Words_Ary )
+
+
+            RETURN
+
+        END SUBROUTINE Cleanup
+
+    END SUBROUTINE ParseInAry
     
 	!=======================================================================
 	subroutine ReadEmptyLine(Un,CurLine)
@@ -370,7 +455,7 @@ CONTAINS
     READ(Un, '(A)') Line
     CurLine = CurLine + 1
 
-END subroutine ReadEmptyLine
+	END subroutine ReadEmptyLine
 
 	!=======================================================================
 	!> This subroutine is used to get the NumWords "words" from a line of text.
@@ -443,18 +528,17 @@ END subroutine ReadEmptyLine
 
 
     RETURN
-END SUBROUTINE GetWords
+	END SUBROUTINE GetWords
 
 	!=======================================================================
 	!> This subroutine checks the data to be parsed to make sure it finds
     !! the expected variable name and an associated value.
 	SUBROUTINE ChkParseData ( Words, ExpVarName, FileName, FileLineNum, ErrVar )
 
-    USE DLLChain_Types, ONLY : DLLErrorVariables
-
+    USE FFP_Types, ONLY : LidarErrorVariables
 
         ! Arguments declarations.
-    TYPE(DLLErrorVariables),         INTENT(INOUT)          :: ErrVar   ! Current line of input
+    TYPE(LidarErrorVariables),         INTENT(INOUT)          :: ErrVar   ! Current line of input
 
     INTEGER(4), INTENT(IN)             :: FileLineNum                   !< The number of the line in the file being parsed.
     INTEGER(4)                        :: NameIndx                      !< The index into the Words array that points to the variable name.
@@ -505,7 +589,7 @@ END SUBROUTINE GetWords
     ENDIF
 
 
-END SUBROUTINE ChkParseData 
+	END SUBROUTINE ChkParseData 
 
 	!=======================================================================
 	!> This routine converts all the text in a string to upper case.
@@ -533,8 +617,7 @@ END SUBROUTINE ChkParseData
   
      RETURN
     END SUBROUTINE Conv2UC
-
-    
+   
 	!=======================================================================
     !> This function returns a left-adjusted string representing the passed numeric value. 
     !! It eliminates trailing zeroes and even the decimal point if it is not a fraction. \n
@@ -558,4 +641,3 @@ END SUBROUTINE ChkParseData
         RETURN
     END FUNCTION Int2LStr
     
-END MODULE DLLChain_Subs

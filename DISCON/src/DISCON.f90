@@ -1,17 +1,17 @@
-! Name:   The main routine of the master (wrapper) DLL.
-! Author: Feng Guo from Flensburg University of Applied Sciences, funded by LIKE -- Lidar Knowledge Europe, grant agreement No. 858358.   
-! Target: This code aims to provide a reference Lidar-assisted control package for the community. Please cite the following paper if this code is helpful for your research:
-! Guo, F., Schlipf, D., and Cheng, P. W.: Evaluation of lidar-assisted wind turbine control under various turbulence characteristics, Wind Energ. Sci. Discuss.
-! [preprint], https://doi.org/10.5194/wes-2022-62, in review, 2022.    
-    
-    
-! Function: The DLL chain is designed to make the lidar data processing or other algorithms more independent from the feedback controller. 
-! It allows a more flexiable design of additional algorithms which meet the requirement of a "smart lidar" concpet (https://zenodo.org/record/5004524#.Yevsp_7MKUk)
-
-! License: MIT License
+! Name:   		Master (wrapper) DLL.
+! Authors: 		Feng Guo, David Schlipf from Flensburg University of Applied Sciences, funded by LIKE -- Lidar Knowledge Europe, grant agreement No. 858358.   
+! Target: 		This code aims to provide a reference Lidar-assisted control package for the community. Please cite the following paper if this code is helpful for your research:
+! 				Guo, F., Schlipf, D., and Cheng, P. W.: Evaluation of lidar-assisted wind turbine control under various turbulence characteristics, Wind Energ. Sci. Discuss.
+! 				[preprint], https://doi.org/10.5194/wes-2022-62, in review, 2022.    
+! Function: 	The DLL chain is designed to make the lidar data processing or other algorithms more independent from the feedback controller. 
+! 				It allows a more flexible design of additional algorithms which meet the requirement of a "smart lidar" concept (https://zenodo.org/record/5004524#.Yevsp_7MKUk)
+! Reference:	The subroutines rely on the legacy Bladed style data interface. See the Bladed manual for more detail.    
+! 				The code is written based on the source code of ROSCO. Version 2.4.1, https://github.com/NREL/ROSCO, 2021. by NREL.
+! License: 		MIT License
 ! Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
+! -------------------------------------------------------------------------------------------
       
-    !=======================================================================
+!=======================================================================
 SUBROUTINE DISCON(avrSWAP, aviFAIL, accINFILE, avcOUTNAME, avcMSG) BIND (C, NAME='DISCON')
 ! DO NOT REMOVE or MODIFY LINES starting with "!DEC$" or "!GCC$"
 ! !DEC$ specifies attributes for IVF and !GCC$ specifies attributes for gfortran
@@ -43,9 +43,9 @@ CHARACTER(KIND=C_CHAR),         INTENT(IN   )   :: avcOUTNAME(NINT(avrSWAP(51)))
 CHARACTER(KIND=C_CHAR),         INTENT(INOUT)   :: avcMSG(NINT(avrSWAP(49)))        ! MESSAGE (Message from DLL to simulation code [ErrMsg])  The message which will be displayed by the calling program if aviFAIL <> 0.
 CHARACTER(SIZE(avcOUTNAME)-1)                   :: RootName                         ! a Fortran version of the input C string (not considered an array here)    [subtract 1 for the C null-character]
 CHARACTER(SIZE(avcMSG)-1)                       :: ErrMsg                           ! a Fortran version of the C string argument (not considered an array here) [subtract 1 for the C null-character]
-INTEGER(4)                                      :: i           ! Counter
-INTEGER(HANDLE)                                 :: FileAddr    ! The address of file FileName.         (RETURN value from LoadLibrary in kernel32.f90)
-INTEGER(LPVOID)                                 :: ProcAddr    ! The address of procedure ProcName.    (RETURN value from GetProcAddress in kernel32.f90)   
+INTEGER(4)                                      :: iDLL       	! Counter
+INTEGER(HANDLE)                                 :: FileAddr    	! The address of file FileName.         (RETURN value from LoadLibrary in kernel32.f90)
+INTEGER(LPVOID)                                 :: ProcAddr    	! The address of procedure ProcName.    (RETURN value from GetProcAddress in kernel32.f90)   
 
 CHARACTER(*),                   PARAMETER      :: RoutineName = 'DISCON'
 
@@ -82,20 +82,20 @@ IF (DLL_ErrVar%aviFAIL < 0) THEN  ! Check whether error occurs in the last step,
     
     ELSE  ! Loop over to get the sub DLL procedure addresses, and execute the sub DLLs  
         
-    DO i=1, DLL_TYPE%NumberOfsubDLLs
-        FileAddr = LoadLibrary( TRIM(DLL_TYPE%DLLFILENAME(i))//C_NULL_CHAR ) ! get the file address of the DLL
-        ProcAddr = GetProcAddress( FileAddr, TRIM(DLL_TYPE%PROCNAME(i))//C_NULL_CHAR ) ! get the prodedure address of the DLL
-        DLL_TYPE%PROCADDR(i) = TRANSFER(ProcAddr, DLL_TYPE%PROCADDR(i)) !transfer the address to the pointer type
+    DO iDLL=1, DLL_TYPE%NumberOfsubDLLs
+        FileAddr = LoadLibrary( TRIM(DLL_TYPE%DLLFILENAME(iDLL))//C_NULL_CHAR ) ! get the file address of the DLL
+        ProcAddr = GetProcAddress( FileAddr, TRIM(DLL_TYPE%PROCNAME(iDLL))//C_NULL_CHAR ) ! get the procedure address of the DLL
+        DLL_TYPE%PROCADDR(iDLL) = TRANSFER(ProcAddr, DLL_TYPE%PROCADDR(iDLL)) ! transfer the address to the pointer type
 
-        IF(.NOT. C_ASSOCIATED(DLL_TYPE%PROCADDR(i))) THEN ! if the DLL is not found, return
-                ErrMsg = RoutineName//':'//'Error loading the sub DLLs by DISCON.dll, The procedure '//TRIM(DLL_TYPE%DLLFILENAME(i))//' could not be loaded.'
+        IF(.NOT. C_ASSOCIATED(DLL_TYPE%PROCADDR(iDLL))) THEN ! if the DLL is not found, return
+                ErrMsg = RoutineName//':'//'Error loading the sub DLLs by DISCON.dll: the DLL procedure '//TRIM(DLL_TYPE%DLLFILENAME(iDLL))//' could not be loaded.'
                 print * , TRIM(ErrMsg)
                 avcMSG = TRANSFER(TRIM(ErrMsg)//C_NULL_CHAR, avcMSG, SIZE(avcMSG))
                 aviFAIL = -1
                 RETURN
         ELSE      ! if the address is correctly associated, then we can run the DLL
-            CALL C_F_PROCPOINTER(DLL_TYPE%PROCADDR(i), DLL_Legacy_Subroutine)
-            CALL DLL_Legacy_Subroutine (avrSWAP, aviFAIL, DLL_TYPE%DLLINPUTFILENAME(i), avcOUTNAME, avcMSG )
+            CALL C_F_PROCPOINTER(DLL_TYPE%PROCADDR(iDLL), DLL_Legacy_Subroutine)
+            CALL DLL_Legacy_Subroutine (avrSWAP, aviFAIL, DLL_TYPE%DLLINPUTFILENAME(iDLL), avcOUTNAME, avcMSG )
         END IF
     END DO
 

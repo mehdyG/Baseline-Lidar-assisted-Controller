@@ -19,6 +19,7 @@ set(SOURCES
     src/LDP.f90
     src/LDP_Subs.f90
     src/LDP_Types.f90
+    src/LDP_Subs_ParseInputs.f90
 )
 
 add_library(LDP SHARED ${SOURCES})

@@ -19,6 +19,7 @@ set(SOURCES
     src/FFP.f90
     src/FFP_Subs.f90
     src/FFP_Types.f90
+    src/FFP_Subs_ParseInputs.f90
 )
 
 add_library(FFP SHARED ${SOURCES})

@@ -1,0 +1,11 @@
+! Collective pitch feedforward parameters for perfect wind preview. Please do not change the number of lines.
+
+!------- FILTERS AND TIMING ----------------------------------------------------------
+0    	! FlagLPF             	- Enable low-pass filter (flag) [0/1]
+1	    ! f_cutoff	   			- Corner frequency (-3dB) of the low-pass filter [rad/s]
+4.6    	! T_buffer        		- Buffer time for filtered REWS signal [s]
+
+!------- STATIC PITCH CURVE ---------------------
+21     	! n_StaticPitchCurve  	- Number of points in static pitch curve [-]
+0       11.3 	11.4     	12.4     	13.4    	14.4        15.4        16.4        17.4    	18.4    	19.4    	20.4        21.4        22.4        23.4         24.4   	25.4   		26.4    	27.4         28.4  		29.4       	! StaticWind  	- Wind speed  values in static pitch curve [m/s]
+0    	0       0.0111    	0.0888     	0.1306    	0.1642      0.194   	0.221       0.2461      0.2697      0.292       0.3135   	0.3349      0.3568      0.3778       0.398      0.4171      0.4355      0.4535       0.471       0.488    	! StaticPitch 	- Pitch angle values in static pitch curve [rad]
