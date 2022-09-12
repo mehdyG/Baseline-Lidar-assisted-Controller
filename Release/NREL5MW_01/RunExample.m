@@ -18,8 +18,10 @@ addpath('MatlabFunctions')
 
 % Copy the adequate OpenFAST version to the example folder
 FASTexeFile     = 'openfast_x64.exe';
+FASTmapFile     = 'MAP_x64.dll';
 SimulationName  = 'NREL-5.0-126-RWT';
 copyfile(['..\OpenFAST\',FASTexeFile],FASTexeFile)
+copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 
 %% Run FB
 ManipulateTXTFile('ROSCO2.IN','1                   ! FlagLAC',...
@@ -35,6 +37,7 @@ dos([FASTexeFile,' ',SimulationName,'.fst']);
 
 %% Clean up
 delete(FASTexeFile)
+delete(FASTmapFile)
 
 %% Comparison
 % FB Data
@@ -91,7 +94,7 @@ legend('feedback only','feedback-feedforward')
 xlabel('time [s]')
 
 linkaxes(MyAxes,'x');
-T_Start     = 30;
+T_Start     = 0;
 xlim([T_Start 60])
 
 % display results
