@@ -62,15 +62,14 @@ CONTAINS
         LocalVar%REWS_f             = avrSWAP(L + 2 + NINT(avrSWAP(L+ 2)) + 10) !avrSWAP(L+ 2) gates per beam
 		
 				
-		! DS: initialize last pitch command for rate limitations
-		LocalVar%PC_PitComT_Last  	= avrSWAP(4)
-        
-        
         ! --- NJA: usually feedback back the previous pitch command helps for numerical stability, sometimes it does not...
         IF (LocalVar%iStatus == 0) THEN
             LocalVar%BlPitch(1) = avrSWAP(4)
             LocalVar%BlPitch(2) = avrSWAP(33)
             LocalVar%BlPitch(3) = avrSWAP(34)
+			
+			! DS: initialize last pitch command for rate limitations
+			LocalVar%PC_PitComT_Last  	= avrSWAP(4)			
         ELSE
             LocalVar%BlPitch(1) = LocalVar%PitCom(1)
             LocalVar%BlPitch(2) = LocalVar%PitCom(2)

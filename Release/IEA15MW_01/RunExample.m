@@ -5,7 +5,7 @@
 % significantly the rotor speed variation when OpenFAST is disturbed by an
 % Extreme Operating Gust. Here, only the rotational GenDOF is enabled.  
 % Result:       
-% Change in rotor over speed:  -96.3 %
+% Change in rotor over speed:  -95.9 %
 % Authors: 		
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
