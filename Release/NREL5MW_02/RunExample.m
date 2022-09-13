@@ -14,7 +14,7 @@
 clearvars; 
 close all; 
 clc;
-addpath('MatlabFunctions')
+addpath('..\MatlabFunctions')
 
 % Copy the adequate OpenFAST version to the example folder
 FASTexeFile     = 'openfast_x64.exe';

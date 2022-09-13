@@ -2,7 +2,7 @@
 % Purpose:
 % Here, we use a perfect wind preview to demonstrate that the collective
 % pitch feedforward controller (designed with SLOW) together with a motion
-% compensation is able to reduce significantely the rotor speed variation 
+% compensation is able to reduce significantly the rotor speed variation 
 % when OpenFAST is disturbed by an Extreme Operating Gust. 
 % Here, all DOFs are enabled. 
 % Result:       
@@ -16,7 +16,7 @@
 clearvars; 
 close all; 
 clc;
-addpath('..\NREL5MW_01\MatlabFunctions')
+addpath('..\MatlabFunctions')
 
 % Copy the adequate OpenFAST version to the example folder
 FASTexeFile     = 'openfast_x64.exe';
