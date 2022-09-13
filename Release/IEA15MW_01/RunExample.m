@@ -2,7 +2,7 @@
 % Purpose:
 % Here, we use a perfect wind preview to demonstrate that the collective
 % pitch feedforward controller (designed with SLOW) is able to reduce
-% significantely the rotor speed variation when OpenFAST is disturbed by an
+% significantly the rotor speed variation when OpenFAST is disturbed by an
 % Extreme Operating Gust. Here, only the rotational GenDOF is enabled.  
 % Result:       
 % Change in rotor over speed:  -96.3 %
@@ -14,7 +14,7 @@
 clearvars; 
 close all; 
 clc;
-addpath('..\NREL5MW_01\MatlabFunctions')
+addpath('..\MatlabFunctions')
 
 % Copy the adequate OpenFAST version to the example folder
 FASTexeFile     = 'openfast_x64.exe';
