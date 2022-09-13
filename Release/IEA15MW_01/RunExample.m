@@ -97,11 +97,11 @@ legend('feedback only','feedback-feedforward')
 xlabel('time [s]')
 
 linkaxes(MyAxes,'x');
-T_Start     = 50;
+T_Start     = 30;
 xlim([T_Start 90])
 
 % display results
-RatedRotorSpeed = 12.1;
+RatedRotorSpeed = 7.56;
 fprintf('Change in rotor over speed:  %4.1f %%\n',...
     (max(abs(RotSpeed_FBFF(Time_FBFF>T_Start)-RatedRotorSpeed))/...
      max(abs(RotSpeed_FB  (Time_FB  >T_Start)-RatedRotorSpeed))-1)*100)
