@@ -1,5 +1,5 @@
 ------- OpenFAST INPUT FILE -------------------------------------------
-LAC NREL5MW_02: NREL 5.0 MW Baseline Wind Turbine (Onshore), with realistic wind preview from a pulsed lidar system
+LAC Test NREL5MW_02: NREL 5.0 MW Baseline Wind Turbine (Onshore), with realistic wind preview from a pulsed lidar system
 ---------------------- SIMULATION CONTROL --------------------------------------
 false         Echo            - Echo input data to <RootName>.ech (flag)
 "FATAL"       AbortLevel      - Error level when simulation should abort (string) {"WARNING", "SEVERE", "FATAL"}

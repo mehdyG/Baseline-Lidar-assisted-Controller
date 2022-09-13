@@ -1,9 +1,9 @@
-% Example #01:  NREL 5 MW + Perfect wind preview
+% LAC Test NREL5MW_01:  NREL 5 MW + Perfect wind preview
 % Purpose:
 % Here, we use a perfect wind preview to demonstrate that the collective
 % pitch feedforward controller (designed with SLOW) is able to reduce
 % significantely the rotor speed variation when OpenFAST is disturbed by an
-% Extreme Operating Gust. 
+% Extreme Operating Gust. Here, only the rotational GenDOF is enabled. 
 % Result:       
 % Change in rotor over speed:  -95.3 %
 % Authors: 		
@@ -31,7 +31,7 @@ dos([FASTexeFile,' ',SimulationName,'.fst']);
 
 %% Run FBFF  
 ManipulateTXTFile('ROSCO2.IN','0                   ! FlagLAC',...
-                              '1                   ! FlagLAC');                          
+                              '1                   ! FlagLAC'); % enable LAC
 dos([FASTexeFile,' ',SimulationName,'.fst']);
 [FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary([SimulationName,'.outb']);
 
@@ -55,6 +55,7 @@ BldPitch1_FBFF	= FBFF_Data(:,strcmp(ChannelName,'BldPitch1'));
 GenTq_FBFF     	= FBFF_Data(:,strcmp(ChannelName,'GenTq'));
 RotSpeed_FBFF 	= FBFF_Data(:,strcmp(ChannelName,'RotSpeed'));
 TwrBsMyt_FBFF 	= FBFF_Data(:,strcmp(ChannelName,'TwrBsMyt')); 
+VLOS01LI_FBFF   = FBFF_Data(:,strcmp(ChannelName,'VLOS01LI')); 
 
 % Plot         
 ScreenSize = get(0,'ScreenSize');
@@ -63,14 +64,17 @@ figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4
 MyAxes(1) = subplot(5,1,1);
 hold on; grid on; box on
 plot(Time_FB,  Wind1VelX_FB);
-plot(Time_FBFF,Wind1VelX_FBFF);
-ylabel('Wind1VelX [m/s]');
+plot(Time_FBFF,VLOS01LI_FBFF)
+legend('Hub height wind speed','Vlos')
+ylabel('[m/s]');
+legend('Wind1VelX','VLOS01LI')
 
 MyAxes(2) = subplot(5,1,2);
 hold on; grid on; box on
 plot(Time_FB,  BldPitch1_FB);
 plot(Time_FBFF,BldPitch1_FBFF);
 ylabel('BldPitch1 [deg]');
+legend('feedback only','feedback-feedforward')
 
 MyAxes(3) = subplot(5,1,3);
 hold on; grid on; box on
@@ -90,7 +94,6 @@ plot(Time_FB,  TwrBsMyt_FB);
 plot(Time_FBFF,TwrBsMyt_FBFF);
 ylabel('TwrBsMyt [kNm]');
 
-legend('feedback only','feedback-feedforward')
 xlabel('time [s]')
 
 linkaxes(MyAxes,'x');

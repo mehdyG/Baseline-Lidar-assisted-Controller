@@ -1,4 +1,4 @@
-% Example #02:  NREL 5 MW + Realistic wind preview
+% LAC Test NREL5MW_02:  NREL 5 MW + Realistic wind preview
 % Purpose:
 % Here, we use a realistic wind preview to demonstrate that the collective
 % pitch feedforward controller together with the correct filtering provides
@@ -18,23 +18,26 @@ addpath('MatlabFunctions')
 
 % Copy the adequate OpenFAST version to the example folder
 FASTexeFile     = 'openfast_x64.exe';
+FASTmapFile     = 'MAP_x64.dll';
 SimulationName  = 'NREL-5.0-126-RWT';
 copyfile(['..\OpenFAST\',FASTexeFile],FASTexeFile)
+copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 
 %% Run FB
 ManipulateTXTFile('ROSCO2.IN','1                   ! FlagLAC',...
-                              '0                   ! FlagLAC');                          
+                              '0                   ! FlagLAC'); % disable LAC
 dos([FASTexeFile,' ',SimulationName,'.fst']);
 [FB_Data, ~, ~, ~, ~]               = ReadFASTbinary([SimulationName,'.outb']);
 
 %% Run FBFF  
 ManipulateTXTFile('ROSCO2.IN','0                   ! FlagLAC',...
-                              '1                   ! FlagLAC');                          
+                              '1                   ! FlagLAC'); % enable LAC
 dos([FASTexeFile,' ',SimulationName,'.fst']);
 [FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary([SimulationName,'.outb']);
 
 %% Clean up
 delete(FASTexeFile)
+delete(FASTmapFile)
 
 %% Comparison
 % FB Data

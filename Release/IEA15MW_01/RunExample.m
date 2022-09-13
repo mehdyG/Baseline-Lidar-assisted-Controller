@@ -1,11 +1,11 @@
-% Example #01:  IEA 15 MW + Perfect wind preview
+% LAC Test IEA15MW_01:  IEA 15 MW onshore + Perfect wind preview
 % Purpose:
 % Here, we use a perfect wind preview to demonstrate that the collective
 % pitch feedforward controller (designed with SLOW) is able to reduce
 % significantely the rotor speed variation when OpenFAST is disturbed by an
-% Extreme Operating Gust. 
+% Extreme Operating Gust. Here, only the rotational GenDOF is enabled.  
 % Result:       
-% Change in rotor over speed:  -???????????????????????????????%
+% Change in rotor over speed:  -96.3 %
 % Authors: 		
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -25,13 +25,13 @@ copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 
 %% Run FB
 ManipulateTXTFile('ROSCO2.IN','1                   ! FlagLAC',...
-                              '0                   ! FlagLAC');                          
+                              '0                   ! FlagLAC'); % disable LAC
 dos([FASTexeFile,' ',SimulationName,'.fst']);
 [FB_Data, ~, ~, ~, ~]               = ReadFASTbinary([SimulationName,'.outb']);
 
 %% Run FBFF  
 ManipulateTXTFile('ROSCO2.IN','0                   ! FlagLAC',...
-                              '1                   ! FlagLAC');                          
+                              '1                   ! FlagLAC'); % enable LAC
 dos([FASTexeFile,' ',SimulationName,'.fst']);
 [FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary([SimulationName,'.outb']);
 
@@ -64,16 +64,17 @@ figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4
 MyAxes(1) = subplot(5,1,1);
 hold on; grid on; box on
 plot(Time_FB,  Wind1VelX_FB);
-% plot(Time_FBFF,Wind1VelX_FBFF);
 plot(Time_FBFF,VLOS01LI_FBFF)
 legend('Hub height wind speed','Vlos')
-ylabel('Wind1VelX [m/s]');
+ylabel('[m/s]');
+legend('Wind1VelX','VLOS01LI')
 
 MyAxes(2) = subplot(5,1,2);
 hold on; grid on; box on
 plot(Time_FB,  BldPitch1_FB);
 plot(Time_FBFF,BldPitch1_FBFF);
 ylabel('BldPitch1 [deg]');
+legend('feedback only','feedback-feedforward')
 
 MyAxes(3) = subplot(5,1,3);
 hold on; grid on; box on
@@ -93,18 +94,12 @@ plot(Time_FB,  TwrBsMyt_FB);
 plot(Time_FBFF,TwrBsMyt_FBFF);
 ylabel('TwrBsMyt [kNm]');
 
-legend('feedback only','feedback-feedforward')
 xlabel('time [s]')
 
 linkaxes(MyAxes,'x');
-T_Start     = 50;
-xlim([T_Start 90])
 
 % display results
-RatedRotorSpeed = 12.1;
+RatedRotorSpeed = 7.56;
 fprintf('Change in rotor over speed:  %4.1f %%\n',...
-    (max(abs(RotSpeed_FBFF(Time_FBFF>T_Start)-RatedRotorSpeed))/...
-     max(abs(RotSpeed_FB  (Time_FB  >T_Start)-RatedRotorSpeed))-1)*100)
-
- 
-
+    (max(abs(RotSpeed_FBFF-RatedRotorSpeed))/...
+     max(abs(RotSpeed_FB  -RatedRotorSpeed))-1)*100)
