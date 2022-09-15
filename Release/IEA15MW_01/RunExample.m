@@ -1,12 +1,13 @@
 % LAC Test IEA15MW_01: IEA 15 MW offshore reference model monopile 
-% configuration with perfect wind preview from a single point lidar system
+% configuration with perfect wind preview from a single point lidar system.
+% Origin and changes in files: see ChangeLog.txt.
 % Purpose:
 % Here, we use a perfect wind preview to demonstrate that the collective
 % pitch feedforward controller (designed with SLOW) is able to reduce
 % significantly the rotor speed variation when OpenFAST is disturbed by an
 % Extreme Operating Gust. Here, only the rotational GenDOF is enabled.  
 % Result:       
-% Change in rotor over speed:  -96.2 %
+% Change in rotor over speed:  -96.7 %
 % Authors: 		
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -27,14 +28,18 @@ copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 %% Run FB
 ManipulateTXTFile('ROSCO2.IN','1                   ! FlagLAC',...
                               '0                   ! FlagLAC'); % disable LAC
-dos([FASTexeFile,' ',SimulationName,'.fst']);
-[FB_Data, ~, ~, ~, ~]               = ReadFASTbinary([SimulationName,'.outb']);
+% TODO DS: disable motion compensation in LDP_v2                          
+dos([FASTexeFile,' ',SimulationName,'.fst']);                   % run OpenFAST
+movefile([SimulationName,'.outb'],[SimulationName,'_FB.outb'])  % rename it
+[FB_Data, ~, ~, ~, ~]               = ReadFASTbinary([SimulationName,'_FB.outb']);
 
 %% Run FBFF  
 ManipulateTXTFile('ROSCO2.IN','0                   ! FlagLAC',...
                               '1                   ! FlagLAC'); % enable LAC
-dos([FASTexeFile,' ',SimulationName,'.fst']);
-[FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary([SimulationName,'.outb']);
+% TODO DS: enable motion compensation in LDP_v2                                                    
+dos([FASTexeFile,' ',SimulationName,'.fst']);                   % run OpenFAST
+movefile([SimulationName,'.outb'],[SimulationName,'_FBFF.outb'])% rename it
+[FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary([SimulationName,'_FBFF.outb']);
 
 %% Clean up
 delete(FASTexeFile)

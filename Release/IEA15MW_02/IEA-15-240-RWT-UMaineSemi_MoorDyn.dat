@@ -31,31 +31,7 @@ Line  LineType  UnstrLen  NumSegs  NodeAnch  NodeFair  Outputs  CtrlChan
 60.0     TmaxIC    - max time for ic gen (s)
 4.0      CdScaleIC - factor by which to scale drag coefficients during dynamic relaxation (-)
 0.001     threshIC  - threshold for IC convergence (-)                                          
------------------------- OUTPUTS --------------------------------------------                                           
-FairTen1                                            
-FairTen2                                            
-FairTen3                                            
-AnchTen1                                            
-AnchTen2                                            
-AnchTen3
-
+------------------------ OUTPUTS --------------------------------------------                                                                         
 END                                         
 ------------------------- need this line --------------------------------------                                                                                     
-Con1fx                                          
-Con3fx                                          
-Con5fx      
-Con1fy                                          
-Con3fy                                          
-Con5fy                                          
-Con1fz                                          
-Con3fz                                          
-Con5fz  
-Con2fx                                          
-Con4fx                                          
-Con6fx      
-Con2fy                                          
-Con4fy                                          
-Con6fy                                          
-Con2fz                                          
-Con4fz                                          
-Con6fz                                 
+                                            

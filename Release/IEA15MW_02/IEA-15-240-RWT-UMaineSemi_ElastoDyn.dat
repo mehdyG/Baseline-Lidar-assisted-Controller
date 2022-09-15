@@ -3,7 +3,7 @@ IEA 15 MW offshore reference model on UMaine VolturnUS-S semi-submersible floati
 ---------------------- SIMULATION CONTROL --------------------------------------
 False         Echo        - Echo input data to "<RootName>.ech" (flag)
           3   Method      - Integration method: {1: RK4, 2: AB4, or 3: ABM4} (-)
-0.0125     DT          Integration time step (s) !Changed from "default", FL on 28.2.2022
+"default"     DT          Integration time step (s)
 ---------------------- ENVIRONMENTAL CONDITION ---------------------------------
     9.80665   Gravity     - Gravitational acceleration (m/s^2)
 ---------------------- DEGREES OF FREEDOM --------------------------------------
@@ -25,23 +25,23 @@ True          PtfmRDOF    - Platform roll tilt rotation DOF (flag)
 True          PtfmPDOF    - Platform pitch tilt rotation DOF (flag)
 True          PtfmYDOF    - Platform yaw rotation DOF (flag)
 ---------------------- INITIAL CONDITIONS --------------------------------------
-          0.0   OoPDefl     - Initial out-of-plane blade-tip displacement (meters)
-          0.0   IPDefl      - Initial in-plane blade-tip deflection (meters)
-         1.0   BlPitch(1)  - Blade 1 initial pitch (degrees)
-         1.0   BlPitch(2)  - Blade 2 initial pitch (degrees)
-         1.0   BlPitch(3)  - Blade 3 initial pitch (degrees) [unused for 2 blades]
-          0.0   TeetDefl    - Initial or fixed teeter angle (degrees) [unused for 3 blades]
-          0.0   Azimuth     - Initial azimuth angle for blade 1 (degrees)
-       7.55   RotSpeed    - Initial or fixed rotor speed (rpm)
-          0.0   NacYaw      - Initial or fixed nacelle-yaw angle (degrees)
-          0.0   TTDspFA     - Initial fore-aft tower-top displacement (meters)
-          0.0   TTDspSS     - Initial side-to-side tower-top displacement (meters)
-          0.0   PtfmSurge   - Initial or fixed horizontal surge translational displacement of platform (meters)
-          0.0   PtfmSway    - Initial or fixed horizontal sway translational displacement of platform (meters)
-          0.0   PtfmHeave   - Initial or fixed vertical heave translational displacement of platform (meters)
-          0.0   PtfmRoll    - Initial or fixed roll tilt rotational displacement of platform (degrees)
-          00.   PtfmPitch   - Initial or fixed pitch tilt rotational displacement of platform (degrees)
-          0.0   PtfmYaw     - Initial or fixed yaw rotational displacement of platform (degrees)
+       3.22   OoPDefl     - Initial out-of-plane blade-tip displacement (meters)
+          0   IPDefl      - Initial in-plane blade-tip deflection (meters)
+       15.5   BlPitch(1)  - Blade 1 initial pitch (degrees)
+       15.5   BlPitch(2)  - Blade 2 initial pitch (degrees)
+       15.5   BlPitch(3)  - Blade 3 initial pitch (degrees) [unused for 2 blades]
+          0   TeetDefl    - Initial or fixed teeter angle (degrees) [unused for 3 blades]
+          0   Azimuth     - Initial azimuth angle for blade 1 (degrees)
+       7.56   RotSpeed    - Initial or fixed rotor speed (rpm)
+          0   NacYaw      - Initial or fixed nacelle-yaw angle (degrees)
+     0.0930   TTDspFA     - Initial fore-aft tower-top displacement (meters)
+          0   TTDspSS     - Initial side-to-side tower-top displacement (meters)
+       12.8   PtfmSurge   - Initial or fixed horizontal surge translational displacement of platform (meters)
+     -0.247   PtfmSway    - Initial or fixed horizontal sway translational displacement of platform (meters)
+     -0.404   PtfmHeave   - Initial or fixed vertical heave translational displacement of platform (meters)
+      0.538  PtfmRoll    - Initial or fixed roll tilt rotational displacement of platform (degrees)
+       1.91   PtfmPitch   - Initial or fixed pitch tilt rotational displacement of platform (degrees)
+     -0.717   PtfmYaw     - Initial or fixed yaw rotational displacement of platform (degrees)
 ---------------------- TURBINE CONFIGURATION -----------------------------------
           3   NumBl       - Number of blades (-)
      120.97   TipRad      - The distance from the rotor apex to the blade tip (meters)
@@ -85,9 +85,9 @@ True          PtfmYDOF    - Platform yaw rotation DOF (flag)
 2.3667E+10    PtfmYIner   - Platform inertia for yaw rotation about the platform CM (kg m^2)
 ---------------------- BLADE ---------------------------------------------------
          50   BldNodes    - Number of blade nodes (per blade) used for analysis (-)
-"./IEA-15-240-RWT_ElastoDyn_blade.dat"    BldFile1    - Name of file containing properties for blade 1 (quoted string)
-"./IEA-15-240-RWT_ElastoDyn_blade.dat"    BldFile2    - Name of file containing properties for blade 2 (quoted string)
-"./IEA-15-240-RWT_ElastoDyn_blade.dat"    BldFile3    - Name of file containing properties for blade 3 (quoted string) [unused for 2 blades]
+"../IEA-15-240-RWT/IEA-15-240-RWT_ElastoDyn_blade.dat"    BldFile1    - Name of file containing properties for blade 1 (quoted string)
+"../IEA-15-240-RWT/IEA-15-240-RWT_ElastoDyn_blade.dat"    BldFile2    - Name of file containing properties for blade 2 (quoted string)
+"../IEA-15-240-RWT/IEA-15-240-RWT_ElastoDyn_blade.dat"    BldFile3    - Name of file containing properties for blade 3 (quoted string) [unused for 2 blades]
 ---------------------- ROTOR-TEETER --------------------------------------------
           0   TeetMod     - Rotor-teeter spring/damper model {0: none, 1: standard, 2: user-defined from routine UserTeet} (switch) [unused for 3 blades]
           0   TeetDmpP    - Rotor-teeter damper position (degrees) [used only for 2 blades and when TeetMod=1]
@@ -109,7 +109,7 @@ False         Furling     - Read in additional model properties for furling turb
          20   TwrNodes    - Number of tower nodes used for analysis (-)
 "IEA-15-240-RWT-UMaineSemi_ElastoDyn_tower.dat"    TwrFile     - Name of file containing tower properties (quoted string)
 ---------------------- OUTPUT --------------------------------------------------
-True         SumPrint    - Print summary data to "<RootName>.sum" (flag)
+False         SumPrint    - Print summary data to "<RootName>.sum" (flag)
           1   OutFile     - Switch to determine where output will be placed: {1: in module output file only; 2: in glue code output file only; 3: both} (currently unused)
 True          TabDelim    - Use tab delimiters in text tabular output file? (flag) (currently unused)
 "ES10.3E2"    OutFmt      - Format used for text tabular output (except time).  Resulting field should be 10 characters. (quoted string) (currently unused)
@@ -122,191 +122,23 @@ True          TabDelim    - Use tab delimiters in text tabular output file? (fla
                    OutList             - The next line(s) contains a list of output parameters.  See OutListParameters.xlsx for a listing of available output channels, (-)                 
 "Azimuth"
 "BldPitch1"
-"GenSpeed"
-"NacYaw"
-"NcIMUTAxs"
-"NcIMUTAys"
-"NcIMUTAzs"
-"PtfmHeave"
-"PtfmPitch"
-"PtfmRoll"
-"PtfmSurge"
-"PtfmSway"
-"PtfmYaw"
-"RootFxb1"
-"RootFxc1"
-"RootFyb1"
-"RootFyc1"
-"RootFzb1"
-"RootFzc1"
-"RootMxb1"
-"RootMxc1"
-"RootMyb1"
-"RootMyc1"
-"RootMzb1"
-"RootMzc1"
-"RotSpeed"
-"RotThrust"
-"TTDspTwst"
-"TipDxb1"
-"TipDxc1"
-"TipDyb1"
-"TipDyc1"
-"TipDzb1"
-"TipDzc1"
-"TwrBsFxt"
-"TwrBsFyt"
-"TwrBsFzt"
-"TwrBsMxt"
-"TwrBsMyt"
-"TwrBsMzt"
-"TwstDefl1"
-"YawBrFxp"
-"YawBrFyp"
-"YawBrFzp"
-"YawBrMxp"
-"YawBrMyp"
-"YawBrMzp"
-"YawBrTDxt"
-"YawBrTDyt"
-"TTDspFA"
-"TTDspSS"
-"LSShftFya"
-"LSShftFza"
-"LSShftFys"
-"LSShftFzs"
-"LSShftMxa"
-"LSSTipMya"
-"LSSTipMza"
-END of input file (the word "END" must appear in the first 3 columns of this last OutList line)
----------------------- NODE OUTPUTS --------------------------------------------
-          1   BldNd_BladesOut  - Blades to output
-         99   BldNd_BlOutNd   - Blade nodes on each blade (currently unused)
-              OutList     - The next line(s) contains a list of output parameters.  See OutListParameters.xlsx, ElastoDyn_Nodes tab for a listing of available output channels, (-)
-END of input file (the word "END" must appear in the first 3 columns of this last OutList line)
----------------------------------------------------------------------------------------
-"Azimuth"
-"BldPitch1"
 "BldPitch2"
 "BldPitch3"
 "GenSpeed"
-"IPDefl1"
-"LSSGagMya"
-"LSSGagMza"
-"LSSTipMys"
-"LSSTipMzs"
-"LSShftFys"
-"LSShftFzs"
-"NacYaw"
-"NcIMUTAxs"
-"NcIMUTAys"
-"NcIMUTAzs"
-"OoPDefl1"
 "PtfmHeave"
 "PtfmPitch"
 "PtfmRoll"
 "PtfmSurge"
 "PtfmSway"
 "PtfmYaw"
-"RootFxb1"
-"RootFxb2"
-"RootFxb3"
-"RootFxc1"
-"RootFxc2"
-"RootFxc3"
-"RootFyb1"
-"RootFyb2"
-"RootFyb3"
-"RootFyc1"
-"RootFyc2"
-"RootFyc3"
-"RootFzb1"
-"RootFzb2"
-"RootFzb3"
-"RootFzc1"
-"RootFzc2"
-"RootFzc3"
-"RootMxb1"
-"RootMxb2"
-"RootMxb3"
-"RootMxc1"
-"RootMxc2"
-"RootMxc3"
-"RootMyb1"
-"RootMyb2"
-"RootMyb3"
-"RootMyc1"
-"RootMyc2"
-"RootMyc3"
-"RootMzb1"
-"RootMzb2"
-"RootMzb3"
-"RootMzc1"
-"RootMzc2"
-"RootMzc3"
 "RotSpeed"
-"RotThrust"
-"RotTorq"
-"Spn1MLxb1"
-"Spn1MLyb1"
-"Spn2MLxb1"
-"Spn2MLyb1"
-"Spn3MLxb1"
-"Spn3MLyb1"
-"Spn4MLxb1"
-"Spn4MLyb1"
-"Spn5MLxb1"
-"Spn5MLyb1"
-"Spn6MLxb1"
-"Spn6MLyb1"
-"Spn7MLxb1"
-"Spn7MLyb1"
-"Spn8MLxb1"
-"Spn8MLyb1"
-"Spn9MLxb1"
-"Spn9MLyb1"
-"TTDspTwst"
-"TipDxb1"
-"TipDxb2"
-"TipDxb3"
-"TipDxc1"
-"TipDxc2"
-"TipDxc3"
-"TipDyb1"
-"TipDyb2"
-"TipDyb3"
-"TipDyc1"
-"TipDyc2"
-"TipDyc3"
-"TipDzb1"
-"TipDzb2"
-"TipDzb3"
-"TipDzc1"
-"TipDzc2"
-"TipDzc3"
-"TwHt1TPxi"
-"TwHt1TPyi"
-"TwrBsFxt"
-"TwrBsFyt"
-"TwrBsFzt"
-"TwrBsMxt"
 "TwrBsMyt"
-"TwrBsMzt"
-"TwstDefl1"
-"YawBrFxp"
-"YawBrFyp"
-"YawBrFzp"
-"YawBrMxp"
-"YawBrMyp"
-"YawBrMzp"
-"YawBrTDxt"
-"YawBrTDyt"
+"TTDspFA"
+"TipDxc1"
+END of input file (the word "END" must appear in the first 3 columns of this last OutList line)
 ---------------------- NODE OUTPUTS --------------------------------------------
           1   BldNd_BladesOut  - Blades to output
          99   BldNd_BlOutNd   - Blade nodes on each blade (currently unused)
               OutList     - The next line(s) contains a list of output parameters.  See OutListParameters.xlsx, ElastoDyn_Nodes tab for a listing of available output channels, (-)
-"TDx"    - local flapwise (translational) deflection (relative to the undeflected position) of node
-"TDy"    - local edgewise (translational) deflection (relative to the undeflected position) of node
-"RDz"
 END of input file (the word "END" must appear in the first 3 columns of this last OutList line)
 ---------------------------------------------------------------------------------------

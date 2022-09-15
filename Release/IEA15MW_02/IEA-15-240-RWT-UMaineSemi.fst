@@ -1,10 +1,10 @@
 ------- OpenFAST INPUT FILE ------------------------------------------- 
-IEA 15 MW offshore reference model on UMaine VolturnUS-S semi-submersible floating platform
+LAC Test IEA15MW_01: IEA 15 MW offshore reference model on UMaine VolturnUS-S semi-submersible floating platform with perfect wind preview from a single point lidar system
 ---------------------- SIMULATION CONTROL -------------------------------------- 
 False                  Echo        - Echo input data to <RootName>.ech (flag) 
 "FATAL"                AbortLevel  - Error level when simulation should abort (string) {"WARNING", "SEVERE", "FATAL"} 
-30.0                   TMax        - Total run time (s) 
-0.0125                  DT          - Integration time step (s)  
+150.0                   TMax        - Total run time (s) 
+0.0125                 DT          - Integration time step (s)  
 2                      InterpOrder - Interpolation order for input/output time history (-) {1=linear, 2=quadratic} 
 0                      NumCrctn    - Number of correction iterations (-) {0=explicit calculation, i.e., no corrections} 
 99999.0                DT_UJac     - Time between calls to get Jacobians (s) 
@@ -21,17 +21,17 @@ False                  Echo        - Echo input data to <RootName>.ech (flag)
       1                   - CompLidar   - Compute Lidar Module (switch) {0 = Off, 1 = On}		
 ---------------------- INPUT FILES --------------------------------------------- 
 "IEA-15-240-RWT-UMaineSemi_ElastoDyn.dat"    EDFile          - Name of file containing ElastoDyn input parameters (quoted string) 
-""                     BDBldFile(1) - Name of file containing BeamDyn input parameters for blade 1 (quoted string) 
-""                     BDBldFile(2) - Name of file containing BeamDyn input parameters for blade 2 (quoted string) 
-""                     BDBldFile(3) - Name of file containing BeamDyn input parameters for blade 3 (quoted string) 
-"./IEA-15-240-RWT_InflowFile.dat"    InflowFile      - Name of file containing inflow wind input parameters (quoted string) 
-"./IEA-15-240-RWT_AeroDyn15.dat"  AeroFile     - Name of file containing aerodynamic input parameters (quoted string) 
-"IEA-15-240-RWT_ServoDyn.dat"    ServoFile       - Name of file containing control and electrical-drive input parameters (quoted string) 
-"IEA-15-240-RWT-UMaineSemi_HydroDyn.dat"      HydroFile       - Name of file containing hydrodynamic input parameters (quoted string) 
-"none"                 SubFile         - Name of file containing sub-structural input parameters (quoted string) 
+"none"                 BDBldFile(1) - Name of file containing BeamDyn input parameters for blade 1 (quoted string) 
+"none"                 BDBldFile(2) - Name of file containing BeamDyn input parameters for blade 2 (quoted string) 
+"none"                 BDBldFile(3) - Name of file containing BeamDyn input parameters for blade 3 (quoted string) 
+"IEA-15-240-RWT_InflowFile.dat"    					InflowFile      - Name of file containing inflow wind input parameters (quoted string) 
+"../IEA-15-240-RWT/IEA-15-240-RWT_AeroDyn15.dat"  	AeroFile     	- Name of file containing aerodynamic input parameters (quoted string) 
+"IEA-15-240-RWT-UMaineSemi_ServoDyn.dat"    		ServoFile       - Name of file containing control and electrical-drive input parameters (quoted string) 
+"IEA-15-240-RWT-UMaineSemi_HydroDyn.dat"      		HydroFile       - Name of file containing hydrodynamic input parameters (quoted string) 
+"none"                 SubFile     - Name of file containing sub-structural input parameters (quoted string) 
 "IEA-15-240-RWT-UMaineSemi_MoorDyn.dat"      MooringFile     - Name of file containing mooring system input parameters (quoted string) 
-"none"                 IceFile         - Name of file containing ice input parameters (quoted string) 
-"SinglePoint_LidarFile.dat"	SWELidarFile	- Name of file containing SWE Lidar input parameters (quoted string)
+"none"                 IceFile     - Name of file containing ice input parameters (quoted string) 
+"SinglePoint_LidarFile.dat"	 						SWELidarFile	- Name of file containing SWE Lidar input parameters (quoted string)
 ---------------------- OUTPUT -------------------------------------------------- 
 False                  SumPrint    - Print summary data to "<RootName>.sum" (flag) 
 10.0                   SttsTime    - Amount of time between screen status messages (s) 
