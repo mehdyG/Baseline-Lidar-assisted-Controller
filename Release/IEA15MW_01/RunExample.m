@@ -1,11 +1,12 @@
-% LAC Test IEA15MW_01:  IEA 15 MW onshore + Perfect wind preview
+% LAC Test IEA15MW_01: IEA 15 MW offshore reference model monopile 
+% configuration with perfect wind preview from a single point lidar system
 % Purpose:
 % Here, we use a perfect wind preview to demonstrate that the collective
 % pitch feedforward controller (designed with SLOW) is able to reduce
 % significantly the rotor speed variation when OpenFAST is disturbed by an
 % Extreme Operating Gust. Here, only the rotational GenDOF is enabled.  
 % Result:       
-% Change in rotor over speed:  -95.9 %
+% Change in rotor over speed:  -96.2 %
 % Authors: 		
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -19,7 +20,7 @@ addpath('..\MatlabFunctions')
 % Copy the adequate OpenFAST version to the example folder
 FASTexeFile     = 'openfast_x64.exe';
 FASTmapFile     = 'MAP_x64.dll';
-SimulationName  = 'IEA-15-240-RWT';
+SimulationName  = 'IEA-15-240-RWT-Monopile';
 copyfile(['..\OpenFAST\',FASTexeFile],FASTexeFile)
 copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 
