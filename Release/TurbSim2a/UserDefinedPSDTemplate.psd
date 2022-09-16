@@ -1,0 +1,11 @@
+-------- User-Defined Spectra (Used only with USRINP spectral model) ------------------------------------
+
+---------------------------------------------------------------------------------------------------------
+14400  NumUSRf - Number of Frequencies [determines how many lines to read from this file]
+1.0 SpecScale1 - scaling factor for the input u-component spectrum
+1.0 SpecScale2 - scaling factor for the input v-component spectrum
+1.0 SpecScale3 - scaling factor for the input w-component spectrum
+.........................................................................................................
+Frequency u-component PSD v-component PSD w-component PSD
+(Hz) (m^2/s) (m^2/s) (m^2/s)
+---------------------------------------------------------------------------------------------------------

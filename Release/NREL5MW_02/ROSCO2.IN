@@ -19,7 +19,7 @@
 0                   ! TD_Mode           - Tower damper mode {0: no tower damper, 1: feed back translational nacelle accelleration to pitch angle}
 0                   ! Flp_Mode          - Flap control mode {0: no flap control, 1: steady state flap angle, 2: Proportional flap control, 2: Cyclic (1P) flap control}
 0                   ! OL_Mode           - Open loop control mode {0: no open loop control, 1: open loop control vs. time}
-0                   ! PA_Mode           - Pitch actuator mode {0 - not used, 1 - first order filter, 2 - second order filter}
+2                   ! PA_Mode           - Pitch actuator mode {0 - not used, 1 - first order filter, 2 - second order filter}
 0                   ! Ext_Mode          - External control mode {0 - not used, 1 - call external dynamic library}
 0                   ! ZMQ_Mode          - Fuse ZeroMQ interaface {0: unused, 1: Yaw Control}
 
@@ -136,7 +136,7 @@
 0.707000000000      ! PA_Damping        - Pitch actuator damping ratio [-, unused if PA_Mode = 1]
 
 !------- Lidar-Assisted Control ------------
-1                   ! FlagLAC           - Flag of lidar-assisted Pitch feedforward control: 1 on, 0 off, the feedforward pitch rate needs to be accessible from the AvrSWAP array
+0                   ! FlagLAC           - Flag of lidar-assisted Pitch feedforward control: 1 on, 0 off, the feedforward pitch rate needs to be accessible from the AvrSWAP array
 
 !------- External Controller Interface -----------------------------------------------------
 "unused"            ! DLL_FileName   	- Name/location of the dynamic library in the Bladed-DLL format

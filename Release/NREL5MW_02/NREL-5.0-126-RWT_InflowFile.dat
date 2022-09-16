@@ -1,5 +1,5 @@
 ------- InflowWind INPUT FILE -------------------------------------------------------------------------
-EOG at 18 m/s
+IEC class 1A turbulent wind speed using Kaimal model, mean wind speed equal to 18 m/s
 ---------------------------------------------------------------------------------------------------------------
 False         Echo           - Echo input data to <RootName>.ech (flag)
           4   WindType       - switch for wind file type (1=steady; 2=uniform; 3=binary TurbSim FF; 4=binary Bladed-style FF; 5=HAWC format; 6=User defined; 7=native Bladed FF)
@@ -20,7 +20,7 @@ False         Echo           - Echo input data to <RootName>.ech (flag)
 ================== Parameters for Binary TurbSim Full-Field files   [used only for WindType = 3] ==============
 "90m_08mps.bts"    FileName_BTS   - Name of the Full field wind file to use (.bts)
 ================== Parameters for Binary Bladed-style Full-Field files   [used only for WindType = 4] =========
-"Wind\U18_4096x64x64_36864x400x400m_t0_6d67_ae0d37642L49Gamma3d1Seed18027"  FilenameRoot   - Rootname of the full-field wind file to use (.wnd, .sum)
+"Wind\Uref_18_4096x25x25_36864x132x132m_xup0_IEC_Class_1A_Seed15417"  FilenameRoot   - Rootname of the full-field wind file to use (.wnd, .sum)
 False         TowerFile      - Have tower file (.twr) (flag)
 ================== Parameters for HAWC-format binary files  [Only used with WindType = 5] =====================
 "wasp\Output\basic_5u.bin"    FileName_u     - name of the file containing the u-component fluctuating wind (.bin)
