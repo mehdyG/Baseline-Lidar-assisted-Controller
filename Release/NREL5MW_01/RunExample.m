@@ -24,14 +24,12 @@ copyfile(['..\OpenFAST\',FASTexeFile],FASTexeFile)
 copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 
 %% Run FB
-ManipulateTXTFile('ROSCO2.IN','1                   ! FlagLAC',...
-                              '0                   ! FlagLAC'); % disable LAC                         
+ManipulateTXTFile('ROSCO2.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC                        
 dos([FASTexeFile,' ',SimulationName,'.fst']);
 [FB_Data, ~, ~, ~, ~]               = ReadFASTbinary([SimulationName,'.outb']);
 
 %% Run FBFF  
-ManipulateTXTFile('ROSCO2.IN','0                   ! FlagLAC',...
-                              '1                   ! FlagLAC'); % enable LAC
+ManipulateTXTFile('ROSCO2.IN','0 ! FlagLAC','1 ! FlagLAC'); % enable LAC
 dos([FASTexeFile,' ',SimulationName,'.fst']);
 [FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary([SimulationName,'.outb']);
 

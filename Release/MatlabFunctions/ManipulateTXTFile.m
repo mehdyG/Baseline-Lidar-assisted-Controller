@@ -17,11 +17,11 @@
 % ----------------------------------
 function n = ManipulateTXTFile(TXTFile,StringToReplace,NewString)
 
-[~,NAME,EXT]    = fileparts(TXTFile); 
-TempTXTFile     = [NAME,'_temp',EXT];
-fid             = fopen(TXTFile);
-fidTemp         = fopen(TempTXTFile,'w+');
-n               = 0;
+[FOLDER,NAME,EXT]   = fileparts(TXTFile); 
+TempTXTFile         = fullfile(FOLDER,[NAME,'_temp',EXT]);
+fid                 = fopen(TXTFile);
+fidTemp             = fopen(TempTXTFile,'w+');
+n                   = 0;
 
 while ~feof(fid)
    s            = fgetl(fid);

@@ -3,180 +3,159 @@
 % Here, we use a realistic wind preview to demonstrate that the collective
 % pitch feedforward controller together with the correct filtering provides
 % the reduction in rotor speed variation as predicted by the linear model
-% and the coherence.
-% Result:       
-% Change in rotor speed standard deviation:  -18.4 %
-% Authors: 		
+% and the coherence. In this example, we assume frozen turbulence, only one 
+% 3D turbulence field (y,z,t) at rotor plane is generated.
+% Result:
+% Change in rotor speed standard deviation:  -19.9 %
+% Authors:
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
 
 %% Setup
-clearvars; 
-close all; 
+clearvars;
+close all;
 clc;
 addpath('..\MatlabFunctions')
 
-set(groot,'defaultTextInterpreter','latex')
-set(groot,'defaultTextFontWeight','bold')
-set(groot,'defaultAxesTickLabelInterpreter','latex')
-set(groot,'defaultAxesFontWeight','bold')
-set(groot,'defaultLegendInterpreter','latex')
-set(groot,'defaultFigureColor','w')
-set(groot,'defaultTextFontSize',12)
-set(groot,'defaultAxesFontSize',12)
-set(groot,'defaultLineLineWidth',1.2)
+% Seeds (can be adjusted, but will provide different results)
+nSample             = 6;                        % [-]           number of stochastic turbulence field samples
+Seed_vec            = [1:nSample];              % [-]           vector of seeds
 
-orange    = [0.8500 0.3250 0.0980];
-green     = [0.4660 0.6740 0.1880];
-yellow    = [0.9290, 0.6940, 0.1250];
-lightblue = [0.3010, 0.7450, 0.9330];
+% Parameters postprocessing (can be adjusted, but will provide different results)
+t_start             = 10;                       % [-]           ignore data before for STD and spectra
+nDataPerBlock       = 2^14;                     % [-]           data per block, here 2^14/80 s = 204.8 s, so we have a frequency resolution of 1/204.8 Hz = 0.0049 Hz  
+vWindow             = hamming(nDataPerBlock);   % [-]           window for estimation
+nFFT                = [];                       % [-]           number of FFT, default: nextpow2(nDataPerBlock); 
+nOverlap            = [];                       % [-]           samples of overlap, default: 50% overlap
 
-rng(12)
-nSamples      = 6;                    % number of stochastic turbulence field samples
-Seed_vec      = randi(10^5,[1 6]);    % A vector contains all seeds
-FB_Data       = cell(size(Seed_vec)); % Allocating
-FBFF_Data     = cell(size(Seed_vec)); % Allocating
-
-
-for iSample = 1:nSamples
+% Files (should not be be changed)
+TurbSimExeFile      = 'TurbSim_x64.exe';
+FASTexeFile         = 'openfast_x64.exe';
+FASTmapFile         = 'MAP_x64.dll';
+SimulationName      = 'NREL-5.0-126-RWT';
+TurbSimTemplateFile = 'TurbSim2aInputFileTemplateNREL5MW.inp';
+if ~exist('TurbulentWind','dir')
+    mkdir TurbulentWind
+end
+if ~exist('SimulationResults','dir')
+    mkdir SimulationResults
+end
+%% Preprocessing: generate turbulent wind field
     
+% Copy the adequate TurbSim version to the example folder 
+copyfile(['..\TurbSim\',TurbSimExeFile],['TurbulentWind\',TurbSimExeFile])
+    
+% Generate all wind fields
+for iSample = 1:nSample        
+    Seed                = Seed_vec(iSample);
+    TurbSimInputFile  	= ['TurbulentWind\URef_18_Seed_',num2str(Seed,'%02d'),'.ipt'];
+    TurbSimResultFile  	= ['TurbulentWind\URef_18_Seed_',num2str(Seed,'%02d'),'.wnd'];
+    if ~exist(TurbSimResultFile,'file')
+        copyfile([TurbSimTemplateFile],TurbSimInputFile)
+        ManipulateTXTFile(TurbSimInputFile,'MyRandSeed1',num2str(Seed));% adjust seed
+        dos(['TurbulentWind\',TurbSimExeFile,' ',TurbSimInputFile]);
+    end
+end
+    
+% Clean up
+delete(['TurbulentWind\',TurbSimExeFile])
+
+%% Processing: run simulations
 
 % Copy the adequate OpenFAST version to the example folder
-FASTexeFile     = 'openfast_x64.exe';
-FASTmapFile     = 'MAP_x64.dll';
-SimulationName  = 'NREL-5.0-126-RWT';
 copyfile(['..\OpenFAST\',FASTexeFile],FASTexeFile)
 copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
-copyfile(['..\TurbSim2a'],'TurbSim2a')
 
-
-%% Preprocessing to generate turbulent wind field
-URef           = 18;        % reference mean wind speed [m/s]
-TurbRNGSeed    = Seed_vec(iSample);
-KaimalTurb     = KaimalTurbConfig('IEC_Class_1A',URef);  % Adjust the parameter in this configuration function for different turbulence characteristics
-x_planes       = [0];                                    % longitudinal coordinate of x planes
-                                                         % In this example, we assume frozen turbulence, 
-                                                         % only one 3D turbulence field (y,z,t) at rotor plane is generated
-                                                         % If evolving turbulence is required, set x_unfrozen     = [0 120], 
-                                                         % then another 3D turbulence field at x = 120m will also be generated
-KaimalTurb     = KaimalTurbFieldConfig('4096x25x25',KaimalTurb,x_planes,TurbRNGSeed);      
-KaimalTurb     = CalculateKaimalSpectra(KaimalTurb);  
-WindFileDir    = 'Wind';
-KaimalTurb     = Generate4DKaimalTurb(KaimalTurb,'Wind','TurbSim2a',0,0);
-
-% adjust the OpenFAST input file to let it be able to find the wind field input
-ManipulateTXTFile('NREL-5.0-126-RWT_InflowFile.dat','not specified',...
-                  [WindFileDir '\' KaimalTurb.Field.CaseName]);        % Change the name of of the turbulent wind input
-                                                    
-
-%% Run FB
-ManipulateTXTFile('ROSCO2.IN','1                   ! FlagLAC',...
-                              '0                   ! FlagLAC'); % disable LAC
-
-
-if ~exist('SimResults','dir')
-mkdir SimResults
+% Simulate with all wind fields
+for iSample = 1:nSample
+    
+    % Adjust the InflowWind file
+    Seed                = Seed_vec(iSample);
+    WindFileRoot        = ['TurbulentWind\URef_18_Seed_',num2str(Seed,'%02d')];
+    ManipulateTXTFile('NREL-5.0-126-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
+    
+    % Run FB    
+    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
+    if ~exist(FASTresultFile,'file')    
+        ManipulateTXTFile('ROSCO2.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
+        dos([FASTexeFile,' ',SimulationName,'.fst']);
+        movefile([SimulationName,'.outb'],FASTresultFile)
+    end
+   
+    % Run FB+FF    
+    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
+    if ~exist(FASTresultFile,'file')    
+        ManipulateTXTFile('ROSCO2.IN','0 ! FlagLAC','1 ! FlagLAC'); % enable LAC
+        dos([FASTexeFile,' ',SimulationName,'.fst']);
+        movefile([SimulationName,'.outb'],FASTresultFile)
+    end    
+    
+    % Reset the InflowWind file again
+    ManipulateTXTFile('NREL-5.0-126-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
 end
 
-if ~exist(['SimResults\FB_only_SampleNum_' num2str(iSample) '.outb'],'file')||...
-    ~exist(['SimResults\FB_only_SampleNum_' num2str(iSample) '.RO.dbg'],'file')
-    dos([FASTexeFile,' ',SimulationName,'.fst']);
-    movefile([SimulationName,'.outb'],['SimResults\FB_only_SampleNum_' num2str(iSample) '.outb'])
-    movefile([SimulationName,'.RO.dbg'],['SimResults\FB_only_SampleNum_' num2str(iSample) '.RO.dbg'])
-end
-
-[FB_Data{iSample}, ~, ~, ~, ~]               = ReadFASTbinary(['SimResults\FB_only_SampleNum_' num2str(iSample) '.outb']);
-
-%% Run FBFF 
-ManipulateTXTFile('ROSCO2.IN','0                   ! FlagLAC',...
-                              '1                   ! FlagLAC'); % enable LAC
- 
-if ~exist(['SimResults\FBFF_SampleNum_' num2str(iSample) '.outb'],'file')||...
-    ~exist(['SimResults\FBFF_SampleNum_' num2str(iSample) '.RO.dbg'],'file')
-    dos([FASTexeFile,' ',SimulationName,'.fst']);
-    movefile([SimulationName,'.outb'],['SimResults\FBFF_SampleNum_' num2str(iSample) '.outb'])
-    movefile([SimulationName,'.RO.dbg'],['SimResults\FBFF_SampleNum_' num2str(iSample) '.RO.dbg'])
-end
-
-[FBFF_Data{iSample}, ChannelName, ~, ~, ~] 	= ReadFASTbinary(['SimResults\FBFF_SampleNum_' num2str(iSample) '.outb']);
-                          
-
-%% Restore Inflow file to default
-ManipulateTXTFile('NREL-5.0-126-RWT_InflowFile.dat',[WindFileDir '\' KaimalTurb.Field.CaseName],...
-                  'not specified'); % Change the name of of the turbulent wind input
-
-
-
-end
-
-
-%% Clean up and back to default status
+% Clean up
 delete(FASTexeFile)
 delete(FASTmapFile)
-delete('TurbSim2a\*')
-rmdir TurbSim2a
 
+%% Postprocessing: evaluate data
 
+for iSample = 1:nSample    
 
-%% Estimate Spectra from the simulated time series
+    % Load data
+    Seed                = Seed_vec(iSample);
+    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
+    [FB_Data,   ~, ~, ~, ~]             = ReadFASTbinary(FASTresultFile);
+    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
+    [FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary(FASTresultFile);
 
-% parameters for 'pwelch' method
-Tstart           = 5;      % drop the initial 5 second
-nFFT             = 16384;  % number of FFT 
-nDataPerBlock    = 16384;  % data per block
-vWindow          = hamming(nDataPerBlock); % hamming window
-noverlap         = [];     % 50% over lap
-Fs               = 1/(FB_Data{1}(2,strcmp(ChannelName,'Time'))-FB_Data{1}(1,strcmp(ChannelName,'Time')));
+    % Get signals from FB Data
+    Time_FB         = FB_Data(:,strcmp(ChannelName,'Time'));
+    RotSpeed_FB     = FB_Data(:,strcmp(ChannelName,'RotSpeed'));
 
-Std_Omega_r_FB      = zeros(nSamples,1);
-Std_Omega_r_FBFF    = zeros(nSamples,1);
+    % Get signals from FBFF Data
+    Time_FBFF     	= FBFF_Data(:,strcmp(ChannelName,'Time'));
+    RotSpeed_FBFF 	= FBFF_Data(:,strcmp(ChannelName,'RotSpeed'));  
 
-for iSample = 1:nSamples
-    if iSample == 1
-        [S_temp ,f_est]            = pwelch(detrend(FB_Data{iSample}(:,strcmp(ChannelName,'RotSpeed'))),vWindow,noverlap,nFFT,Fs); 
-        S_Omega_r_FB_est           = zeros(nSamples,max(size(S_temp)));
-        S_Omega_r_FBFF_est         = zeros(nSamples,max(size(S_temp)));
-        
-        [S_Omega_r_FB_est(iSample,:),~]  = pwelch(detrend(FB_Data{iSample}(:,strcmp(ChannelName,'RotSpeed'))),vWindow,noverlap,nFFT,Fs);
-        [S_Omega_r_FBFF_est(iSample,:),~]    = pwelch(detrend(FBFF_Data{iSample}(:,strcmp(ChannelName,'RotSpeed'))),vWindow,noverlap,nFFT,Fs); 
-       
-    else
-        [S_Omega_r_FB_est(iSample,:),~]  = pwelch(detrend(FB_Data{iSample}(:,strcmp(ChannelName,'RotSpeed'))),vWindow,noverlap,nFFT,Fs);
-        [S_Omega_r_FBFF_est(iSample,:),~]    = pwelch(detrend(FBFF_Data{iSample}(:,strcmp(ChannelName,'RotSpeed'))),vWindow,noverlap,nFFT,Fs); 
-    end
-    
-    Std_Omega_r_FB(iSample)              = std(FB_Data{iSample}(:,strcmp(ChannelName,'RotSpeed')));
-    Std_Omega_r_FBFF(iSample)            = std(FBFF_Data{iSample}(:,strcmp(ChannelName,'RotSpeed')));
+    % Plot time results
+    figure('Name',['Seed ',num2str(Seed)])
+    hold on; grid on; box on
+    plot(Time_FB,  RotSpeed_FB);
+    plot(Time_FBFF,RotSpeed_FBFF);
+    ylabel('RotSpeed [rpm]');
+    legend('feedback only','feedback-feedforward')
+    xlabel('time [s]')
+
+    % Estimate spectra
+    Fs                                      = 80; % [Hz]  sampling frequenzy, same as in *.fst
+    [S_RotSpeed_FB_est(iSample,:),f_est]	= pwelch(detrend(RotSpeed_FB  (Time_FB>t_start)),  vWindow,nOverlap,nFFT,Fs);
+    [S_RotSpeed_FBFF_est(iSample,:),~]      = pwelch(detrend(RotSpeed_FBFF(Time_FBFF>t_start)),vWindow,nOverlap,nFFT,Fs);
+
+    % Calculate standard deviation
+    STD_RotSpeed_FB  (iSample)              = std(RotSpeed_FB   (Time_FB>t_start));
+    STD_RotSpeed_FBFF(iSample)              = std(RotSpeed_FBFF (Time_FB>t_start));
+
 end
 
+% Load analytical model  FG: to be further improved
+load('AnalyticalModel.mat','AnalyticalModel')
+GBRatio = 97;
 
-%% Load analytical model  FG: to be further improved
-load('AnalyticalModel.mat')
-Turbine.Parameter.Turbine.i = 1/97;
+% Plot spectra
+figure('Name','Simulation results')
 
+hold on; grid on; box on
+p1 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_FB  .*(radPs2rpm(1)/GBRatio)^2,'r--');
+p2 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_FBFF.*(radPs2rpm(1)/GBRatio)^2,'b--');
+p3 = plot(f_est ,mean(S_RotSpeed_FB_est,1),'r-');
+p4 = plot(f_est ,mean(S_RotSpeed_FBFF_est,1),'b-');
 
-%% Plot         
-ScreenSize = get(0,'ScreenSize');
-figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4]))
-
-
-figure(1)
-hold on
-p1 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_FB.*radPs2rpm(1).^2.*Turbine.Parameter.Turbine.i.^2 ,'--','Color',orange);
-p2 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_FBFF.*radPs2rpm(1).^2.*Turbine.Parameter.Turbine.i.^2,'--','Color',lightblue);
-p3 = plot(f_est ,mean(S_Omega_r_FB_est,1),'-','Color',orange);
-p4 = plot(f_est ,mean(S_Omega_r_FBFF_est,1),'-','Color',lightblue);
-grid on 
 set(gca,'Xscale','log')
 set(gca,'Yscale','log')
-xlabel('$f$ [Hz] ')
-ylabel({'$S_{\Omega}$';'[rmp$^2$Hz$^{-1}$]'})
+xlabel('frequency [Hz] ')
+ylabel('Spectra RotSpeed [(rmp)^2Hz^{-1}]')
 legend([p1 p2 p3 p4],'FB-only Analytical','FBFF Analytical','FB-only Estimated','FBFF Estimated')
 
-% linkaxes(MyAxes,'x');
-
 % display results
-RatedRotorSpeed = 12.1;
 fprintf('Change in rotor speed standard deviation:  %4.1f %%\n',...
-    (mean(Std_Omega_r_FBFF)/...
-     mean(mean(abs(Std_Omega_r_FB)))-1)*100)
+    (mean(STD_RotSpeed_FBFF)/mean(STD_RotSpeed_FB)-1)*100)       

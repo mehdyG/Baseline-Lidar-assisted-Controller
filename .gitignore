@@ -2,3 +2,6 @@
 *.outb
 *.out
 *.dbg
+*.sum
+TurbulentWind
+SimulationResults
