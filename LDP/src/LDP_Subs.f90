@@ -93,7 +93,7 @@ CONTAINS
 
 		! Description:
 		print *, '--------------------------------------------------------------------'
-		print *, 'A baseline lidar data processing algorithm - v1.0'
+		print *, 'A baseline lidar data processing algorithm - v1.1'
 		print *, 'Developed by Flensburg University of Applied Sciences, Germany'
 		print *, '--------------------------------------------------------------------'
 

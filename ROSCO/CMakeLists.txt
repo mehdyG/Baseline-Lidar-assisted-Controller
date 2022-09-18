@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(ROSCO2d6 VERSION 2.6.0 LANGUAGES Fortran C)
+project(ROSCO VERSION 2.6.0 LANGUAGES Fortran C)
 
 set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/ftnmods")
 
@@ -37,7 +37,7 @@ set(SOURCES
     src/Constants.f90
     src/ControllerBlocks.f90
     src/Controllers.f90
-    src/ROSCO2d6.F90
+    src/DISCON.F90
     src/ROSCO_Types.f90
     src/Filters.f90
     src/Functions.f90
@@ -95,15 +95,15 @@ if(ZMQ_CLIENT)
 	$<TARGET_OBJECTS:zmq_client>)
 endif()
 
-add_library(ROSCO2d6 SHARED ${SOURCES})
+add_library(discon SHARED ${SOURCES})
 
 if(ZMQ_CLIENT)
-	target_include_directories(ROSCO2d6 PUBLIC ${ZeroMQ_INCLUDE_DIR})
-	target_link_libraries(ROSCO2d6 PUBLIC ${ZeroMQ_LIBRARY})
+	target_include_directories(discon PUBLIC ${ZeroMQ_INCLUDE_DIR})
+	target_link_libraries(discon PUBLIC ${ZeroMQ_LIBRARY})
 endif()
 
 
-install(TARGETS ROSCO2d6
+install(TARGETS discon
   EXPORT "${CMAKE_PROJECT_NAME}Libraries"
   RUNTIME DESTINATION lib
   LIBRARY DESTINATION lib

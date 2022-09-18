@@ -12,7 +12,7 @@
 ! -------------------------------------------------------------------------------------------
 
 !=======================================================================
-SUBROUTINE LDP(avrSWAP, aviFAIL, accINFILE, avcOUTNAME, avcMSG) BIND (C, NAME='LDP')
+SUBROUTINE DISCON(avrSWAP, aviFAIL, accINFILE, avcOUTNAME, avcMSG) BIND (C, NAME='DISCON')
 ! DO NOT REMOVE or MODIFY LINES starting with "!DEC$" or "!GCC$"
 ! !DEC$ specifies attributes for IVF and !GCC$ specifies attributes for gfortran
 
@@ -24,8 +24,8 @@ USE             :: LDP_Subs
 IMPLICIT NONE
 ! Enable .dll export
 #ifndef IMPLICIT_DLLEXPORT
-!DEC$ ATTRIBUTES DLLEXPORT :: LDP
-!GCC$ ATTRIBUTES DLLEXPORT :: LDP
+!DEC$ ATTRIBUTES DLLEXPORT :: DISCON
+!GCC$ ATTRIBUTES DLLEXPORT :: DISCON
 #endif
 
 !------------------------------------------------------------------------------------------------------------------------------
@@ -75,4 +75,4 @@ avcMSG = TRANSFER(TRIM(ErrVar%ErrMsg)//C_NULL_CHAR, avcMSG, SIZE(avcMSG))
 aviFAIL = ErrVar%aviFAIL
 
 RETURN
-END SUBROUTINE LDP
+END SUBROUTINE DISCON

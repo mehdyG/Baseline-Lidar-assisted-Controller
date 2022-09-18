@@ -66,7 +66,7 @@ CONTAINS
             
             ! Description:
             print *, '--------------------------------------------------------------------'
-            print *, 'A DLL chain for developing lidar-assisted control algorithms'
+            print *, 'A DLL chain for developing lidar-assisted control - v1.0'
             print *, 'Developed by Flensburg University of Applied Sciences, Germany'
             print *, '--------------------------------------------------------------------'    
 
@@ -130,18 +130,12 @@ CONTAINS
             ALLOCATE(DLL_TYPE%DLLINPUTFILENAME(DLL_Type%NumberOfsubDLLs))
         END IF
         
-        IF (.not. allocated(DLL_TYPE%PROCNAME)) THEN 
-            ALLOCATE(DLL_TYPE%PROCNAME(DLL_Type%NumberOfsubDLLs))
-        END IF
-        
         ! LOOP to get all DLL names and DLL input names
         DO iDLL=1, DLL_Type%NumberOfsubDLLs
 			CALL ParseInput(UnControllerParameters,CurLine,'SubDLLName',     accINFILE(1),DLL_TYPE%DLLFILENAME(iDLL),     DLL_ErrVar)
 			CALL ParseInput(UnControllerParameters,CurLine,'SubDLLInputName',accINFILE(1),DLL_TYPE%DLLINPUTFILENAME(iDLL),DLL_ErrVar)
-			ppos = SCAN(TRIM(DLL_TYPE%DLLFILENAME(iDLL)),".", BACK= .true.)
-			DLL_TYPE%PROCNAME(iDLL) = DLL_TYPE%DLLFILENAME(iDLL)(1:ppos-1)
-             
-            IF (len_trim( DLL_TYPE%PROCNAME(iDLL))==0) THEN
+	      
+            IF (len_trim( DLL_TYPE%DLLINPUTFILENAME(iDLL))==0) THEN
                 DLL_ErrVar%ErrMsg = RoutineName//':'//'Error reading the DISCON.IN, the number of sub DLLs does not match with the lines in the DISCON.IN file, check the DISCON.IN is correctly set up.'
                 print * , TRIM(DLL_ErrVar%ErrMsg)
                 DLL_ErrVar%aviFAIL = -1

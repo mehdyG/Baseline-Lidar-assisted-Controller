@@ -71,7 +71,6 @@ RootName = TRANSFER(avcOUTNAME, RootName)
 ! Get the sub DLL information from the DISCON.IN, check whether the DISCON is correct
 CALL SetDLLParameters(avrSWAP, accINFILE, SIZE(avcMSG), DLL_Type, DLL_ErrVar)
 
-
 IF (DLL_ErrVar%aviFAIL < 0) THEN  ! Check whether error occurs in the last step, DLLs setting up
     
     ! If error occurs, return
@@ -83,10 +82,10 @@ IF (DLL_ErrVar%aviFAIL < 0) THEN  ! Check whether error occurs in the last step,
     ELSE  ! Loop over to get the sub DLL procedure addresses, and execute the sub DLLs  
         
     DO iDLL=1, DLL_TYPE%NumberOfsubDLLs
-        FileAddr = LoadLibrary( TRIM(DLL_TYPE%DLLFILENAME(iDLL))//C_NULL_CHAR ) ! get the file address of the DLL
-        ProcAddr = GetProcAddress( FileAddr, TRIM(DLL_TYPE%PROCNAME(iDLL))//C_NULL_CHAR ) ! get the procedure address of the DLL
-        DLL_TYPE%PROCADDR(iDLL) = TRANSFER(ProcAddr, DLL_TYPE%PROCADDR(iDLL)) ! transfer the address to the pointer type
 
+        FileAddr = LoadLibrary( TRIM(DLL_TYPE%DLLFILENAME(iDLL))//C_NULL_CHAR ) ! get the file address of the DLL
+        ProcAddr = GetProcAddress( FileAddr,'DISCON') ! get the procedure address of the DLL
+        DLL_TYPE%PROCADDR(iDLL) = TRANSFER(ProcAddr, DLL_TYPE%PROCADDR(iDLL)) ! transfer the address to the pointer type
         IF(.NOT. C_ASSOCIATED(DLL_TYPE%PROCADDR(iDLL))) THEN ! if the DLL is not found, return
                 ErrMsg = RoutineName//':'//'Error loading the sub DLLs by DISCON.dll: the DLL procedure '//TRIM(DLL_TYPE%DLLFILENAME(iDLL))//' could not be loaded.'
                 print * , TRIM(ErrMsg)

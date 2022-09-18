@@ -29,19 +29,18 @@ copyfile(['..\OpenFAST\',FASTexeFile],FASTexeFile)
 copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 
 %% Run FB
-ManipulateTXTFile('ROSCO2.IN','1                   ! FlagLAC',...
-                              '0                   ! FlagLAC'); % disable LAC
+ManipulateTXTFile('ROSCO_15FL.IN','1 ! FlagLAC','0 ! FlagLAC');     % disable LAC
 % TODO DS: disable motion compensation in LDP_v2                          
-dos([FASTexeFile,' ',SimulationName,'.fst']);                   % run OpenFAST
-movefile([SimulationName,'.outb'],[SimulationName,'_FB.outb'])  % rename it
+dos([FASTexeFile,' ',SimulationName,'.fst']);                       % run OpenFAST
+movefile([SimulationName,'.outb'],[SimulationName,'_FB.outb'])      % store results
 [FB_Data, ~, ~, ~, ~]               = ReadFASTbinary([SimulationName,'_FB.outb']);
 
 %% Run FBFF  
-ManipulateTXTFile('ROSCO2.IN','0                   ! FlagLAC',...
-                              '1                   ! FlagLAC'); % enable LAC
+ManipulateTXTFile('ROSCO_15FL.IN','0 ! FlagLAC','1 ! FlagLAC');     % enable LAC
+
 % TODO DS: enable motion compensation in LDP_v2                                                    
-dos([FASTexeFile,' ',SimulationName,'.fst']);                   % run OpenFAST
-movefile([SimulationName,'.outb'],[SimulationName,'_FBFF.outb'])% rename it
+dos([FASTexeFile,' ',SimulationName,'.fst']);                       % run OpenFAST
+movefile([SimulationName,'.outb'],[SimulationName,'_FBFF.outb'])    % store results
 [FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary([SimulationName,'_FBFF.outb']);
 
 %% Clean up

@@ -13,7 +13,7 @@
 ! High level run script
 
 !=======================================================================
-SUBROUTINE ROSCO2d6(avrSWAP, aviFAIL, accINFILE, avcOUTNAME, avcMSG) BIND (C, NAME='ROSCO2d6')
+SUBROUTINE DISCON(avrSWAP, aviFAIL, accINFILE, avcOUTNAME, avcMSG) BIND (C, NAME='DISCON')
 ! DO NOT REMOVE or MODIFY LINES starting with "!DEC$" or "!GCC$"
 ! !DEC$ specifies attributes for IVF and !GCC$ specifies attributes for gfortran
 
@@ -32,8 +32,8 @@ USE             :: ZeroMQInterface
 IMPLICIT NONE
 ! Enable .dll export
 #ifndef IMPLICIT_DLLEXPORT
-!DEC$ ATTRIBUTES DLLEXPORT :: ROSCO2d6
-!GCC$ ATTRIBUTES DLLEXPORT :: ROSCO2d6
+!DEC$ ATTRIBUTES DLLEXPORT :: DISCON
+!GCC$ ATTRIBUTES DLLEXPORT :: DISCON
 #endif
 
 !------------------------------------------------------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ TYPE(ZMQ_Variables),            SAVE           :: zmqVar
 TYPE(ExtControlType),           SAVE           :: ExtDLL
 
 
-CHARACTER(*),                   PARAMETER      :: RoutineName = 'ROSCO2d6'
+CHARACTER(*),                   PARAMETER      :: RoutineName = 'ROSCO'
 
 RootName = TRANSFER(avcOUTNAME, RootName)
 CALL GetRoot(RootName,RootName)
@@ -137,4 +137,4 @@ aviFAIL = ErrVar%aviFAIL
 ErrVar%ErrMsg = ''
 
 RETURN
-END SUBROUTINE ROSCO2d6
+END SUBROUTINE DISCON

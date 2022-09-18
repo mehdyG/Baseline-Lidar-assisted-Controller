@@ -24,7 +24,6 @@ IMPLICIT NONE
 
       CHARACTER(1024), DIMENSION(:), ALLOCATABLE    :: DLLFileName  				!< The name of the DLL file including the full path to the current working directory.
       CHARACTER(1024), DIMENSION(:), ALLOCATABLE    :: DLLInputFileName 			!< The name of the DLL input file including the full path to the current working directory.
-      CHARACTER(1024), DIMENSION(:), ALLOCATABLE    :: ProcName   					!< The name of the procedure in the DLL that will be called.
       
     END TYPE DLLChainParameter_Types
     

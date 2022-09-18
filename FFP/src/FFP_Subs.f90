@@ -91,7 +91,7 @@ CONTAINS
 		
 		! Description:
 		print *, '--------------------------------------------------------------------'
-		print *, 'A baseline pitch forward controller - v1.0'
+		print *, 'A baseline pitch forward controller - v1.1'
 		print *, 'Developed by Flensburg University of Applied Sciences, Germany'
 		print *, '--------------------------------------------------------------------'
 		
