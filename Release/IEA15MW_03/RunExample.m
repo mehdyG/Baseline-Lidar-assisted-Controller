@@ -1,4 +1,4 @@
-% LAC Test NREL5MW_02:  NREL 5 MW + Realistic wind preview
+% LAC Test IEA15MW_03:  IEA 15 MW + Realistic wind preview
 % Purpose:
 % Here, we use a realistic wind preview to demonstrate that the collective
 % pitch feedforward controller together with the correct filtering provides
@@ -6,7 +6,7 @@
 % and the coherence. In this example, we assume frozen turbulence, only one 
 % 3D turbulence field (y,z,t) at rotor plane is generated.
 % Result:
-% Change in rotor speed standard deviation:  -19.9 %
+% Change in rotor speed standard deviation:  !!!!!!!! %
 % Authors:
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -16,7 +16,6 @@ clearvars;
 close all;
 clc;
 addpath('..\MatlabFunctions')
-addpath('AnalyticlModel')
 
 % Seeds (can be adjusted, but will provide different results)
 nSample             = 6;                        % [-]           number of stochastic turbulence field samples
@@ -33,8 +32,8 @@ nOverlap            = [];                       % [-]           samples of overl
 TurbSimExeFile      = 'TurbSim_x64.exe';
 FASTexeFile         = 'openfast_x64.exe';
 FASTmapFile         = 'MAP_x64.dll';
-SimulationName      = 'NREL-5.0-126-RWT';
-TurbSimTemplateFile = 'TurbSim2aInputFileTemplateNREL5MW.inp';
+SimulationName      = 'IEA-15-240-RWT-Monopile';
+TurbSimTemplateFile = 'TurbSim2aInputFileTemplateIEA15MW.inp';
 if ~exist('TurbulentWind','dir')
     mkdir TurbulentWind
 end
@@ -73,12 +72,12 @@ for iSample = 1:nSample
     % Adjust the InflowWind file
     Seed                = Seed_vec(iSample);
     WindFileRoot        = ['TurbulentWind\URef_18_Seed_',num2str(Seed,'%02d')];
-    ManipulateTXTFile('NREL-5.0-126-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
+    ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
     
     % Run FB    
     FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
     if ~exist(FASTresultFile,'file')    
-        ManipulateTXTFile('ROSCO2.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
+        ManipulateTXTFile('ROSCO_15MP.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
         dos([FASTexeFile,' ',SimulationName,'.fst']);
         movefile([SimulationName,'.outb'],FASTresultFile)
     end
@@ -86,41 +85,21 @@ for iSample = 1:nSample
     % Run FB+FF    
     FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
     if ~exist(FASTresultFile,'file')    
-        ManipulateTXTFile('ROSCO2.IN','0 ! FlagLAC','1 ! FlagLAC'); % enable LAC
+        ManipulateTXTFile('ROSCO_15MP.IN','0 ! FlagLAC','1 ! FlagLAC'); % enable LAC
         dos([FASTexeFile,' ',SimulationName,'.fst']);
         movefile([SimulationName,'.outb'],FASTresultFile)
     end    
     
     % Reset the InflowWind file again
-    ManipulateTXTFile('NREL-5.0-126-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
+    ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
 end
-
-
-%run a steady state case with FB control only, required to calculate the analytical model 
-WindFileRoot        = ['Wind\UniformConstant_URef_18'];
-ManipulateTXTFile('NREL-5.0-126-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
-ManipulateTXTFile('NREL-5.0-126-RWT.fst','590   TMax','100   TMax');
-       
-
-FASTresultFile      = ['SimulationResults\URef_18_Seed_SteadyState.outb'];
-if ~exist(FASTresultFile,'file')    
-    ManipulateTXTFile('ROSCO2.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
-    dos([FASTexeFile,' ',SimulationName,'.fst']);
-    movefile([SimulationName,'.outb'],FASTresultFile)
-end
-
-% restore
-ManipulateTXTFile('NREL-5.0-126-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
-ManipulateTXTFile('NREL-5.0-126-RWT.fst','100   TMax','590   TMax');
-  
-% get the steady-state data
-[SteadyState_Data,   ~, ~, ~, ~]             = ReadFASTbinary(FASTresultFile);
 
 % Clean up
 delete(FASTexeFile)
 delete(FASTmapFile)
 
 %% Postprocessing: evaluate data
+
 for iSample = 1:nSample    
 
     % Load data
@@ -137,6 +116,8 @@ for iSample = 1:nSample
     % Get signals from FBFF Data
     Time_FBFF     	= FBFF_Data(:,strcmp(ChannelName,'Time'));
     RotSpeed_FBFF 	= FBFF_Data(:,strcmp(ChannelName,'RotSpeed'));  
+    
+    wind = FBFF_Data(:,strcmp(ChannelName,'Wind1VelX'));
 
     % Plot time results
     figure('Name',['Seed ',num2str(Seed)])
@@ -158,29 +139,16 @@ for iSample = 1:nSample
 
 end
 
+% Load analytical model  FG: to be further improved
+load('AnalyticalModel.mat','AnalyticalModel')
+GBRatio = 97;
 
-
-%% Calculate rotor speed spectra by analytical model
-
-% steady state operating point for 
-Theta_OP        = SteadyState_Data(:,strcmp(ChannelName,'BldPitch1'));  
-Theta_OP        = mean(Theta_OP(length(Theta_OP)-100:end))/180*pi;
-Omega_OP        = rpm2radPs(SteadyState_Data(:,strcmp(ChannelName,'RotSpeed')));  
-Omega_OP        = mean(Omega_OP(length(Omega_OP)-100:end));
-v_0_OP          = 18;
-
-
-AnalyticalModel = AnalyticalRotorSpeedSpectrum(v_0_OP,Theta_OP,Omega_OP,'ROSCO2.IN','Cp_Ct_Cq.NREL5MW.txt','LidarRotorSpectra.mat');
-
-
-
-
-%% Plot spectra
+% Plot spectra
 figure('Name','Simulation results')
 
 hold on; grid on; box on
-p1 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_r_FB.*(radPs2rpm(1))^2,'r--');
-p2 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_r_FF.*(radPs2rpm(1))^2,'b--');
+p1 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_FB  .*(radPs2rpm(1)/GBRatio)^2,'r--');
+p2 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_FBFF.*(radPs2rpm(1)/GBRatio)^2,'b--');
 p3 = plot(f_est ,mean(S_RotSpeed_FB_est,1),'r-');
 p4 = plot(f_est ,mean(S_RotSpeed_FBFF_est,1),'b-');
 
