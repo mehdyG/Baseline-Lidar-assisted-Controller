@@ -6,7 +6,7 @@
 % and the coherence. In this example, we assume frozen turbulence, only one 
 % 3D turbulence field (y,z,t) at rotor plane is generated.
 % Result:
-% Change in rotor speed standard deviation:  !!!!!!!! %
+% Change in rotor speed standard deviation:  -19.6 %
 % Authors:
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -16,6 +16,7 @@ clearvars;
 close all;
 clc;
 addpath('..\MatlabFunctions')
+addpath('AnalyticlModel')
 
 % Seeds (can be adjusted, but will provide different results)
 nSample             = 6;                        % [-]           number of stochastic turbulence field samples
@@ -94,6 +95,28 @@ for iSample = 1:nSample
     ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
 end
 
+
+
+%run a steady state case with FB control only, required to calculate the analytical model 
+WindFileRoot        = ['Wind\UniformConstant_URef_18'];
+ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
+ManipulateTXTFile('IEA-15-240-RWT-Monopile.fst','580   TMax','100   TMax');
+       
+
+FASTresultFile      = ['SimulationResults\URef_18_Seed_SteadyState.outb'];
+if ~exist(FASTresultFile,'file')    
+    ManipulateTXTFile('ROSCO_15MP.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
+    dos([FASTexeFile,' ',SimulationName,'.fst']);
+    movefile([SimulationName,'.outb'],FASTresultFile)
+end
+
+% restore
+ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
+ManipulateTXTFile('IEA-15-240-RWT-Monopile.fst','100   TMax','580   TMax');
+  
+% get the steady-state data
+[SteadyState_Data,   ~, ~, ~, ~]             = ReadFASTbinary(FASTresultFile);
+
 % Clean up
 delete(FASTexeFile)
 delete(FASTmapFile)
@@ -139,16 +162,25 @@ for iSample = 1:nSample
 
 end
 
-% Load analytical model  FG: to be further improved
-load('AnalyticalModel.mat','AnalyticalModel')
-GBRatio = 97;
+%% Calculate rotor speed spectra by analytical model
 
-% Plot spectra
+% steady state operating point for 
+Theta_OP        = SteadyState_Data(:,strcmp(ChannelName,'BldPitch1'));  
+Theta_OP        = mean(Theta_OP(length(Theta_OP)-100:end))/180*pi;
+Omega_OP        = rpm2radPs(SteadyState_Data(:,strcmp(ChannelName,'RotSpeed')));  
+Omega_OP        = mean(Omega_OP(length(Omega_OP)-100:end));
+v_0_OP          = 18;
+
+
+AnalyticalModel = AnalyticalRotorSpeedSpectrum(v_0_OP,Theta_OP,Omega_OP,'ROSCO_15MP.IN','Cp_Ct_Cq.IEA15MW.txt','LidarRotorSpectra_IEA15MW_MolasNL400.mat');
+
+
+%% Plot spectra
 figure('Name','Simulation results')
 
 hold on; grid on; box on
-p1 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_FB  .*(radPs2rpm(1)/GBRatio)^2,'r--');
-p2 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_FBFF.*(radPs2rpm(1)/GBRatio)^2,'b--');
+p1 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_r_FB.*(radPs2rpm(1))^2,'r--');
+p2 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_r_FF.*(radPs2rpm(1))^2,'b--');
 p3 = plot(f_est ,mean(S_RotSpeed_FB_est,1),'r-');
 p4 = plot(f_est ,mean(S_RotSpeed_FBFF_est,1),'b-');
 
