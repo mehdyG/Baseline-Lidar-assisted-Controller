@@ -1,10 +1,10 @@
-function [A,B,C,D] = LinearizeSLOW1DOF(theta_OP,Omega_OP,v_0_OP,Parameter)
+function [A,B,C,D] = LinearizeTurbine1DOF(theta_OP,Omega_OP,v_0_OP,Parameter)
 % (c) Universitaet Stuttgart and sowento GmbH
 
 % internal variables
 J               = Parameter.Turbine.J;
 R               = Parameter.Turbine.R;
-i_GB            = Parameter.Turbine.i;
+i_GB            = Parameter.Turbine.i_GB;
 rho             = Parameter.General.rho;
 
 % gradients

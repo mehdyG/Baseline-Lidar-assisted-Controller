@@ -28,6 +28,7 @@ nDataPerBlock       = 2^14;                     % [-]           data per block, 
 vWindow             = hamming(nDataPerBlock);   % [-]           window for estimation
 nFFT                = [];                       % [-]           number of FFT, default: nextpow2(nDataPerBlock); 
 nOverlap            = [];                       % [-]           samples of overlap, default: 50% overlap
+PlotTimeResults     = true;                    % [true/false]  plot time results (flag)
 
 % Files (should not be be changed)
 TurbSimExeFile      = 'TurbSim_x64.exe';
@@ -41,6 +42,7 @@ end
 if ~exist('SimulationResults','dir')
     mkdir SimulationResults
 end
+
 %% Preprocessing: generate turbulent wind field
     
 % Copy the adequate TurbSim version to the example folder 
@@ -95,27 +97,6 @@ for iSample = 1:nSample
     ManipulateTXTFile('NREL-5.0-126-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
 end
 
-
-%run a steady state case with FB control only, required to calculate the analytical model 
-WindFileRoot        = ['Wind\UniformConstant_URef_18'];
-ManipulateTXTFile('NREL-5.0-126-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
-ManipulateTXTFile('NREL-5.0-126-RWT.fst','590   TMax','100   TMax');
-       
-
-FASTresultFile      = ['SimulationResults\URef_18_Seed_SteadyState.outb'];
-if ~exist(FASTresultFile,'file')    
-    ManipulateTXTFile('ROSCO2.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
-    dos([FASTexeFile,' ',SimulationName,'.fst']);
-    movefile([SimulationName,'.outb'],FASTresultFile)
-end
-
-% restore
-ManipulateTXTFile('NREL-5.0-126-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
-ManipulateTXTFile('NREL-5.0-126-RWT.fst','100   TMax','590   TMax');
-  
-% get the steady-state data
-[SteadyState_Data,   ~, ~, ~, ~]             = ReadFASTbinary(FASTresultFile);
-
 % Clean up
 delete(FASTexeFile)
 delete(FASTmapFile)
@@ -126,7 +107,7 @@ for iSample = 1:nSample
     % Load data
     Seed                = Seed_vec(iSample);
     FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
-    [FB_Data,   ~, ~, ~, ~]             = ReadFASTbinary(FASTresultFile);
+    [FB_Data, ~, ~, ~, ~]               = ReadFASTbinary(FASTresultFile);
     FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
     [FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary(FASTresultFile);
 
@@ -139,13 +120,15 @@ for iSample = 1:nSample
     RotSpeed_FBFF 	= FBFF_Data(:,strcmp(ChannelName,'RotSpeed'));  
 
     % Plot time results
-    figure('Name',['Seed ',num2str(Seed)])
-    hold on; grid on; box on
-    plot(Time_FB,  RotSpeed_FB);
-    plot(Time_FBFF,RotSpeed_FBFF);
-    ylabel('RotSpeed [rpm]');
-    legend('feedback only','feedback-feedforward')
-    xlabel('time [s]')
+    if PlotTimeResults
+        figure('Name',['Seed ',num2str(Seed)])
+        hold on; grid on; box on
+        plot(Time_FB,  RotSpeed_FB);
+        plot(Time_FBFF,RotSpeed_FBFF);
+        ylabel('RotSpeed [rpm]');
+        legend('feedback only','feedback-feedforward')
+        xlabel('time [s]')
+    end
 
     % Estimate spectra
     Fs                                      = 80; % [Hz]  sampling frequenzy, same as in *.fst
@@ -158,22 +141,12 @@ for iSample = 1:nSample
 
 end
 
-
-
 %% Calculate rotor speed spectra by analytical model
-
-% steady state operating point for 
-Theta_OP        = SteadyState_Data(:,strcmp(ChannelName,'BldPitch1'));  
-Theta_OP        = mean(Theta_OP(length(Theta_OP)-100:end))/180*pi;
-Omega_OP        = rpm2radPs(SteadyState_Data(:,strcmp(ChannelName,'RotSpeed')));  
-Omega_OP        = mean(Omega_OP(length(Omega_OP)-100:end));
+% steady state operating point for 18 m/s
+Omega_OP        = rpm2radPs(12.1);
 v_0_OP          = 18;
-
-
-AnalyticalModel = AnalyticalRotorSpeedSpectrum(v_0_OP,Theta_OP,Omega_OP,'ROSCO2.IN','Cp_Ct_Cq.NREL5MW.txt','LidarRotorSpectra.mat');
-
-
-
+theta_OP        = deg2rad(14.81);
+AnalyticalModel = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP,'ROSCO2.IN','Cp_Ct_Cq.NREL5MW.txt','LidarRotorSpectra.mat');
 
 %% Plot spectra
 figure('Name','Simulation results')
