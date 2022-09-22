@@ -16,7 +16,7 @@ clearvars;
 close all;
 clc;
 addpath('..\MatlabFunctions')
-addpath('AnalyticlModel')
+addpath('..\MatlabFunctions\AnalyticlModel')
 
 % Seeds (can be adjusted, but will provide different results)
 nSample             = 6;                        % [-]           number of stochastic turbulence field samples
