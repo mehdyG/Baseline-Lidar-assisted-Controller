@@ -165,22 +165,26 @@ end
 %% Calculate rotor speed spectra by analytical model
 
 % steady state operating point for 
-Theta_OP        = SteadyState_Data(:,strcmp(ChannelName,'BldPitch1'));  
-Theta_OP        = mean(Theta_OP(length(Theta_OP)-100:end))/180*pi;
-Omega_OP        = rpm2radPs(SteadyState_Data(:,strcmp(ChannelName,'RotSpeed')));  
-Omega_OP        = mean(Omega_OP(length(Omega_OP)-100:end));
-v_0_OP          = 18;
+theta_OP                 = 0.2714;
+Omega_OP                 = 0.7920;
+v_0_OP                   = 18;
+f_delay                  = 0.08;
+ROSCOInFileName          = 'ROSCO_15MP.IN';
+RotorPerformanceFile     = 'Cp_Ct_Cq.IEA15MW.txt';
+LidarInputFileName       = 'MolasNL400_1G_LidarFile.dat';
+LDPInputFileName         = 'LDP_NL400.IN';
+SpectralModelFileName    = 'LidarRotorSpectra_IEA15MW_MolasNL400.mat';
+AnalyticalModel          = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP,f_delay,...
+    ROSCOInFileName,RotorPerformanceFile,LidarInputFileName,LDPInputFileName,SpectralModelFileName);
 
-
-AnalyticalModel = AnalyticalRotorSpeedSpectrum(v_0_OP,Theta_OP,Omega_OP,'ROSCO_15MP.IN','Cp_Ct_Cq.IEA15MW.txt','LidarRotorSpectra_IEA15MW_MolasNL400.mat');
 
 
 %% Plot spectra
 figure('Name','Simulation results')
 
 hold on; grid on; box on
-p1 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_r_FB.*(radPs2rpm(1))^2,'r--');
-p2 = plot(AnalyticalModel.f, AnalyticalModel.S_Omega_r_FF.*(radPs2rpm(1))^2,'b--');
+p1 = plot(AnalyticalModel.f,AnalyticalModel.S_Omega_r_FB.*(radPs2rpm(1))^2,'r--');
+p2 = plot(AnalyticalModel.f,AnalyticalModel.S_Omega_r_FF.*(radPs2rpm(1))^2,'b--');
 p3 = plot(f_est ,mean(S_RotSpeed_FB_est,1),'r-');
 p4 = plot(f_est ,mean(S_RotSpeed_FBFF_est,1),'b-');
 

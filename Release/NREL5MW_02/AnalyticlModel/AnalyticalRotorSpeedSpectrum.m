@@ -1,27 +1,44 @@
-function AnalyticalModel = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP,ROSCOInFileName,RotorPerformanceFile,SpectralModelFileName)
+function AnalyticalModel = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP,f_delay,...
+    ROSCOInFileName,RotorPerformanceFile,LidarInputFileName,LDPInputFileName,SpectralModelFileName)
 
-% Baseline Spectrum for rotor effective wind speed (avege u components in the swept area)
-URef                    = v_0_OP;
-T                       = 600;
-dt                      = 1/4;
-[f,S_RR]              	= CalculateSpectraRotor(T,dt,URef);
-S_RR                    = S_RR';
-% DS: should be removed and f, S_RR, S_RL, and S_LL loaded from a file.
+% Inputs definition
+% v_0_OP:   The mean wind speed at the operating point [m/s]
+% theta_OP: The pitch angle at the operating point [rad]
+% Omega_OP: The rotor speed at the operating point [rad/s]
+% f_delay:  The frequency where rotor speed has a very high spectrum
+%           we want to use lidar-assisted control to reduce the rotor speed
+%           fluctuation at this frequency
+
+% ROSCOInFileName:       name of the ROSCO DLL input file 
+% RotorPerformanceFile:  name of the turbine rotor performance file, includes Cp Ct Cq
+% LidarInputFileName£º   name of the lidar input file
+% LDPInputFileName£º     name of the lidar data processing DLL input file
+% SpectralModelFileName: name of the ".mat" file that contains the pre-calculated lidar-rotor spectra
+
+
+% Load 
+% 1. S_RR: Baseline Spectrum for rotor effective wind speed (avege u components in the swept area)
+% 2. S_LL: Spectrum for lidar estimated rotor effective wind speed
+% 3. S_RL: Cross-spectrum between rotor effective wind speed and its lidar estimation
+% 4. f:    Frequency vector
+load(SpectralModelFileName,'S_RL','S_LL','S_RR','f');
+
+
 
 % Get some parameters from Rosco
-Parameter.General.rho           = GetParametersFromROSCO(ROSCOInFileName,'WE_RhoAir');       % [kg/m^3]  air density
+Parameter.General.rho           = GetParametersFromText(ROSCOInFileName,'WE_RhoAir');       % [kg/m^3]  air density
 [theta,lambda,c_P,c_T]          = GetPowerAndThrustCoefficients(RotorPerformanceFile);
 Parameter.Turbine.SS            = struct('theta',theta,'lambda',lambda,'c_P',c_P,'c_T',c_T); % Cp Ct
-Parameter.Turbine.i_GB          = 1/GetParametersFromROSCO(ROSCOInFileName,'WE_GearboxRatio');% [-]  gearbox ratio
-Parameter.Turbine.R             = GetParametersFromROSCO(ROSCOInFileName,'WE_BladeRadius');  % [m]   Rotor radius
-Parameter.Generator.eta_el      = GetParametersFromROSCO(ROSCOInFileName,'VS_GenEff');       % [-]   Generator efficiency
-Parameter.Turbine.J             = GetParametersFromROSCO(ROSCOInFileName,'WE_Jtot');         % [kg m^2] Total drivetrain inertia, including blades, hub and casted generator inertia to LSS, 
-Parameter.Generator.P_a_rated   = GetParametersFromROSCO(ROSCOInFileName,'VS_RtPwr')/Parameter.Generator.eta_el;   % [W] Rated aerodynamic power
+Parameter.Turbine.i_GB          = 1/GetParametersFromText(ROSCOInFileName,'WE_GearboxRatio');% [-]  gearbox ratio
+Parameter.Turbine.R             = GetParametersFromText(ROSCOInFileName,'WE_BladeRadius');  % [m]   Rotor radius
+Parameter.Generator.eta_el      = GetParametersFromText(ROSCOInFileName,'VS_GenEff');       % [-]   Generator efficiency
+Parameter.Turbine.J             = GetParametersFromText(ROSCOInFileName,'WE_Jtot');         % [kg m^2] Total drivetrain inertia, including blades, hub and casted generator inertia to LSS, 
+Parameter.Generator.P_a_rated   = GetParametersFromText(ROSCOInFileName,'VS_RtPwr')/Parameter.Generator.eta_el;   % [W] Rated aerodynamic power
 
 % Pitch control parameters from Rosco
-PC_GS_angles            = GetParametersFromROSCO(ROSCOInFileName,'PC_GS_angles');  % Gain-schedule table: pitch angles [rad].
-PC_GS_KP                = GetParametersFromROSCO(ROSCOInFileName,'PC_GS_KP'); % Gain-schedule table: pitch controller kp gains [s].
-PC_GS_KI                = GetParametersFromROSCO(ROSCOInFileName,'PC_GS_KI'); % Gain-schedule table: pitch controller ki gains [-].
+PC_GS_angles            = GetParametersFromText(ROSCOInFileName,'PC_GS_angles');  % Gain-schedule table: pitch angles [rad].
+PC_GS_KP                = GetParametersFromText(ROSCOInFileName,'PC_GS_KP'); % Gain-schedule table: pitch controller kp gains [s].
+PC_GS_KI                = GetParametersFromText(ROSCOInFileName,'PC_GS_KI'); % Gain-schedule table: pitch controller ki gains [-].
 kp                      = -interp1(PC_GS_angles,PC_GS_KP,theta_OP);
 KI                      = -interp1(PC_GS_angles,PC_GS_KI,theta_OP);
 Ti                      = kp/KI;
@@ -44,15 +61,15 @@ TC.InputName            = {'Omega_g_f'};
 TC.OutputName           = {'M_g'};
 
 % Low Pass filter for generator torque control
-w_cutoff                = GetParametersFromROSCO(ROSCOInFileName,'F_LPFCornerFreq');
+w_cutoff                = GetParametersFromText(ROSCOInFileName,'F_LPFCornerFreq');
 LP                      = ss(-w_cutoff,w_cutoff,1,0); 
 LP.InputName            = {'Omega_g'};
 LP.OutputName           = {'Omega_g_f'};
 LP.StateName            = {'Omega_g_f_dot'};
 
 % pitch actuator
-omega                   = GetParametersFromROSCO(ROSCOInFileName,'PA_CornerFreq');
-xi                      = GetParametersFromROSCO(ROSCOInFileName,'PA_Damping');
+omega                   = GetParametersFromText(ROSCOInFileName,'PA_CornerFreq');
+xi                      = GetParametersFromText(ROSCOInFileName,'PA_Damping');
 PA                      = ss([0 1 ;-omega^2 -2*omega*xi],[0;omega^2],[1 0],0);
 PA.InputName            = {'theta_c'}; 
 PA.OutputName           = {'theta'}; 
@@ -63,7 +80,7 @@ Sum_FB                  = sumblk('theta_c = theta_FB');
 CL_FB                   = connect(WT_1DOF,PA,FB,LP,TC,Sum_FB,{'v_0'},{'Omega_g','Omega_r'});
 
 % Define first Order LPF
-load(SpectralModelFileName,'S_RL','S_LL');
+
 G_RL                    = abs(S_RL)./S_LL;
 w_cutoff                = interp1(G_RL,f,db2mag(-3),'linear')*2*pi;
 LP_FF                   = ss(-w_cutoff,w_cutoff,1,0);                      
@@ -72,13 +89,19 @@ LP_FF.OutputName        = {'v_0Lf'};
 [~,phase_LP_FF,~]      	= bode(LP_FF,f*2*pi);
 TimeDelay               = squeeze(-phase_LP_FF)./360./f';
 
-% Get a time delay for the interested frequency 0.08 is the frequency where rotor speed fluctuates the most
-T_filter                = interp1(f,TimeDelay,0.08,'linear');               % DS: Can we make this also adjustable?
-T_lead                  = 120/URef;                                         % DS: should be extracted from the lidar file or adjustable
+% Get a time delay for the interested frequency f_delay, it is the frequency where rotor speed fluctuates the most
+T_filter                = interp1(f,TimeDelay,f_delay,'linear');  
+Azimuth                 = GetParametersFromText(LDPInputFileName,'Lidar_Azimuth');
+Elevation               = GetParametersFromText(LDPInputFileName,'Lidar_Elevation');
+RangeGate               = GetParametersFromText(LDPInputFileName,'Lidar_RangeGates');
+x_lead                  = RangeGate(1)*cosd(Azimuth(1))*cosd(Elevation(1));
+T_lead                  = x_lead/v_0_OP;                                         
 [~,phase_PA,~]          = bode(PA,f*2*pi);
 T_pitch_over_f          = squeeze(-phase_PA)./360./f';    
-T_pitch                 = interp1(f,T_pitch_over_f,0.08,'linear');          
-T_scan                  = 0.5;  %half lidar full scan time                  % DS: should be extracted from the lidar file or adjustable
+T_pitch                 = interp1(f,T_pitch_over_f,f_delay,'linear');   
+Num_LidarBeam           = GetParametersFromText(LDPInputFileName,'NumberOfBeams'); % number of lidar beam
+t_measurement_interval  = GetParametersFromText(LidarInputFileName,'t_measurement_interval'); % time required to finish measurement at one beam
+T_scan                  = 0.5*Num_LidarBeam*t_measurement_interval;  %half lidar full scan time                  % DS: should be extracted from the lidar file or adjustable
 T_buffer                = T_lead-T_scan-T_pitch-T_filter;
 
 % Define normal feedforward collective pitch controller
