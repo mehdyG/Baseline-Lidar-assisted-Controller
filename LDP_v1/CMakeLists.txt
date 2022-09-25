@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(LDP VERSION 2.0.1 LANGUAGES Fortran)
+project(LDP_v1 VERSION 2.0.1 LANGUAGES Fortran)
 
 set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/ftnmods")
 
@@ -16,10 +16,10 @@ if(APPLE OR UNIX)
 endif()
 
 set(SOURCES
-    src/LDP.f90
-    src/LDP_Subs.f90
-    src/LDP_Types.f90
-    src/LDP_Subs_ParseInputs.f90
+    src/LDP_v1.f90
+    src/LDP_v1_Subs.f90
+    src/LDP_v1_Types.f90
+    src/LDP_Helpers.f90
 )
 
-add_library(LDP SHARED ${SOURCES})
+add_library(LDP_v1 SHARED ${SOURCES})

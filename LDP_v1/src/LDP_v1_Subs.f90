@@ -16,25 +16,9 @@ MODULE LDP_Subs
 !...............................................................................................................................
     !USE Constants   
     USE :: LDP_Types
+	USE :: LDP_Helpers
     
     IMPLICIT NONE
-
-	!------------------------------------------------------------------------------------
-	! For I/O related routines from ROSCO:  Global Variables
-    LOGICAL, PARAMETER          :: DEBUG_PARSING = .FALSE.      ! debug flag to output parsing information, set up Echo file later
-    CHARACTER(*),  PARAMETER    :: NewLine     = ACHAR(10)      ! The delimiter for New Lines [ Windows is CHAR(13)//CHAR(10); MAC is CHAR(13); Unix is CHAR(10) {CHAR(13)=\r is a line feed, CHAR(10)=\n is a new line}]
-    
-    INTERFACE ParseInput                                        ! Parses a character variable name and value from a string.
-        MODULE PROCEDURE ParseInput_Str                         ! Parses a character string from a string.
-        MODULE PROCEDURE ParseInput_Dbl                         ! Parses a double-precision REAL from a string.
-        MODULE PROCEDURE ParseInput_Int                         ! Parses an INTEGER from a string.
-    END INTERFACE
-    
-    INTERFACE ParseAry                                          ! Parse an array of numbers from a string.
-        MODULE PROCEDURE ParseDbAry                             ! Parse an array of double-precision REAL values.
-        MODULE PROCEDURE ParseInAry                             ! Parse an array of whole numbers.
-    END INTERFACE
-	!------------------------------------------------------------------------------------
 	
 CONTAINS
 
@@ -238,8 +222,5 @@ CONTAINS
     END SUBROUTINE WindFieldReconstruction
 	! -----------------------------------------------------------------------------------
 	
-	!------------------------------------------------------------------------------------
-	! Include I/O related routines from ROSCO       
-	include 'LDP_Subs_ParseInputs.f90'
    
 END MODULE LDP_Subs

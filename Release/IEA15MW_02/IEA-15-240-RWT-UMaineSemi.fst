@@ -1,5 +1,5 @@
 ------- OpenFAST INPUT FILE ------------------------------------------- 
-LAC Test IEA15MW_01: IEA 15 MW offshore reference model on UMaine VolturnUS-S semi-submersible floating platform with perfect wind preview from a single point lidar system
+LAC Test IEA15MW_02: IEA 15 MW offshore reference model on UMaine VolturnUS-S semi-submersible floating platform with perfect wind preview from a single point lidar system
 ---------------------- SIMULATION CONTROL -------------------------------------- 
 False                  Echo        - Echo input data to <RootName>.ech (flag) 
 "FATAL"                AbortLevel  - Error level when simulation should abort (string) {"WARNING", "SEVERE", "FATAL"} 
