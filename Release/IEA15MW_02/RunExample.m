@@ -5,11 +5,12 @@
 % Purpose:
 % Here, we use a perfect wind preview to demonstrate that the collective
 % pitch feedforward controller (designed with SLOW) together with a motion
-% compensation is able to reduce significantly the rotor speed variation 
-% when OpenFAST is disturbed by an Extreme Operating Gust. 
-% Here, all DOFs are enabled. 
+% compensation (MC) is able to reduce significantly the rotor speed 
+% variation when OpenFAST is disturbed by an Extreme Operating Gust. 
+% Here, all DOFs are enabled. If no MC is applied, the system is instable.
 % Result:       
-% Change in rotor over speed:  -60.3 %
+% Change in platform pitch amplitude (max-min) from FB to FBFF:  200.5 %
+% Change in platform pitch amplitude (max-min) from FB to FBFFMC:  -63.5 %
 % Authors: 		
 % David Schlipf, Feng Guo, Frank Lemmer
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -30,96 +31,73 @@ copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 
 %% Run FB
 ManipulateTXTFile('ROSCO_v2d6.IN','1 ! FlagLAC','0 ! FlagLAC');     % disable LAC
-% TODO DS: disable motion compensation in LDP_v2                          
 dos([FASTexeFile,' ',SimulationName,'.fst']);                       % run OpenFAST
 movefile([SimulationName,'.outb'],[SimulationName,'_FB.outb'])      % store results
-[FB_Data, ~, ~, ~, ~]               = ReadFASTbinary([SimulationName,'_FB.outb']);
 
-%% Run FBFF  
+%% Run FBFF without motion compensation 
 ManipulateTXTFile('ROSCO_v2d6.IN','0 ! FlagLAC','1 ! FlagLAC');     % enable LAC
-
-% TODO DS: enable motion compensation in LDP_v2                                                    
+ManipulateTXTFile('LDP_v2.IN',    '1 ! MC_Mode','0 ! MC_Mode');     % disable MC
 dos([FASTexeFile,' ',SimulationName,'.fst']);                       % run OpenFAST
 movefile([SimulationName,'.outb'],[SimulationName,'_FBFF.outb'])    % store results
-[FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary([SimulationName,'_FBFF.outb']);
+
+%% Run FBFF with motion compensation 
+ManipulateTXTFile('LDP_v2.IN',    '0 ! MC_Mode','1 ! MC_Mode');     % enable MC
+dos([FASTexeFile,' ',SimulationName,'.fst']);                       % run OpenFAST
+movefile([SimulationName,'.outb'],[SimulationName,'_FBFFMC.outb']) 	% store results
 
 %% Clean up
 delete(FASTexeFile)
 delete(FASTmapFile)
 
 %% Comparison
-% FB Data
-Time_FB         = FB_Data  (:,strcmp(ChannelName,'Time'));
-Wind1VelX_FB    = FB_Data  (:,strcmp(ChannelName,'Wind1VelX'));  
-BldPitch1_FB    = FB_Data  (:,strcmp(ChannelName,'BldPitch1')); 
-GenTq_FB        = FB_Data  (:,strcmp(ChannelName,'GenTq'));
-RotSpeed_FB     = FB_Data  (:,strcmp(ChannelName,'RotSpeed'));
-TwrBsMyt_FB     = FB_Data  (:,strcmp(ChannelName,'TwrBsMyt')); 
-Wave1Elev_FB    = FB_Data  (:,strcmp(ChannelName,'Wave1Elev')); 
-PtfmPitch_FB    = FB_Data  (:,strcmp(ChannelName,'PtfmPitch')); 
-PtfmSurge_FB    = FB_Data  (:,strcmp(ChannelName,'PtfmSurge')); 
-
-% FBFF Data
-Time_FBFF     	= FBFF_Data(:,strcmp(ChannelName,'Time'));
-Wind1VelX_FBFF	= FBFF_Data(:,strcmp(ChannelName,'Wind1VelX'));  
-BldPitch1_FBFF	= FBFF_Data(:,strcmp(ChannelName,'BldPitch1')); 
-GenTq_FBFF     	= FBFF_Data(:,strcmp(ChannelName,'GenTq'));
-RotSpeed_FBFF 	= FBFF_Data(:,strcmp(ChannelName,'RotSpeed'));
-TwrBsMyt_FBFF 	= FBFF_Data(:,strcmp(ChannelName,'TwrBsMyt')); 
-VLOS01LI_FBFF   = FBFF_Data(:,strcmp(ChannelName,'VLOS01LI')); 
-PtfmPitch_FBFF  = FBFF_Data(:,strcmp(ChannelName,'PtfmPitch')); 
-PtfmSurge_FBFF  = FBFF_Data(:,strcmp(ChannelName,'PtfmSurge')); 
+% read in data
+FB              = ReadFASTbinaryIntoStruct([SimulationName,'_FB.outb']);
+FBFF            = ReadFASTbinaryIntoStruct([SimulationName,'_FBFF.outb']);
+FBFFMC          = ReadFASTbinaryIntoStruct([SimulationName,'_FBFFMC.outb']);
 
 % Plot         
 ScreenSize = get(0,'ScreenSize');
 figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4]))
 
-MyAxes(1) = subplot(6,1,1);
+MyAxes(1) = subplot(4,1,1);
 hold on; grid on; box on
-plot(Time_FB,  Wind1VelX_FB);
-plot(Time_FBFF,VLOS01LI_FBFF)
+plot(FB.Time,       FB.Wind1VelX);
+plot(FBFF.Time,     FBFF.VLOS01LI);
+plot(FBFFMC.Time,	FBFFMC.VLOS01LI);
 legend('Hub height wind speed','Vlos')
 ylabel('[m/s]');
-legend('Wind1VelX','VLOS01LI')
+legend('Wind1VelX','VLOS01LI','VLOS01LI with MC')
 
-MyAxes(2) = subplot(6,1,2);
+MyAxes(2) = subplot(4,1,2);
 hold on; grid on; box on
-plot(Time_FB,  BldPitch1_FB);
-plot(Time_FBFF,BldPitch1_FBFF);
+plot(FB.Time,       FB.BldPitch1);
+plot(FBFF.Time,     FBFF.BldPitch1);
+plot(FBFFMC.Time,	FBFFMC.BldPitch1);
 ylabel('BldPitch1 [deg]');
-legend('feedback only','feedback-feedforward')
+legend('feedback only','feedback-feedforward','feedback-feedforward with MC')
 
-MyAxes(3) = subplot(6,1,3);
+MyAxes(3) = subplot(4,1,3);
 hold on; grid on; box on
-plot(Time_FB,  RotSpeed_FB);
-plot(Time_FBFF,RotSpeed_FBFF);
+plot(FB.Time,       FB.RotSpeed);
+plot(FBFF.Time,     FBFF.RotSpeed);
+plot(FBFFMC.Time,	FBFFMC.RotSpeed);
 ylabel('RotSpeed [rpm]');
 
-MyAxes(4) = subplot(6,1,4);
+MyAxes(4) = subplot(4,1,4);
 hold on; grid on; box on
-plot(Time_FB,  TwrBsMyt_FB);
-plot(Time_FBFF,TwrBsMyt_FBFF);
-ylabel('TwrBsMyt [kNm]');
-
-MyAxes(5) = subplot(6,1,5);
-hold on; grid on; box on
-plot(Time_FB,  PtfmPitch_FB);
-plot(Time_FBFF,PtfmPitch_FBFF);
+plot(FB.Time,       FB.PtfmPitch);
+plot(FBFF.Time,     FBFF.PtfmPitch);
+plot(FBFFMC.Time,	FBFFMC.PtfmPitch);
 ylabel('PtfmPitch [deg]');
 
-MyAxes(6) = subplot(6,1,6);
-hold on; grid on; box on
-plot(Time_FB,  PtfmSurge_FB);
-plot(Time_FBFF,PtfmSurge_FBFF);
-ylabel('PtfmSurge [m]');
-
 xlabel('time [s]')
-
 linkaxes(MyAxes,'x');
 xlim([10 150])
 
-% display results
-RatedRotorSpeed = 7.56;
-fprintf('Change in rotor over speed:  %4.1f %%\n',...
-    (max(abs(RotSpeed_FBFF-RatedRotorSpeed))/...
-     max(abs(RotSpeed_FB  -RatedRotorSpeed))-1)*100)
+%% display results
+fprintf('Change in platform pitch amplitude (max-min) from FB to FBFF:  %4.1f %%\n',...
+    ((max(FBFF.PtfmPitch)   -min(FBFF.PtfmPitch))/...
+     (max(FB.PtfmPitch)     -min(FB.PtfmPitch))-1)*100)
+fprintf('Change in platform pitch amplitude (max-min) from FB to FBFFMC:  %4.1f %%\n',...
+    ((max(FBFFMC.PtfmPitch) -min(FBFFMC.PtfmPitch))/...
+     (max(FB.PtfmPitch)     -min(FB.PtfmPitch))-1)*100) 

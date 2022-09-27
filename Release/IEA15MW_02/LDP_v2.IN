@@ -5,3 +5,4 @@
 0         	! Lidar_Azimuth    	- The beam azimuth angles(relative to xz plane)in the lidar local coordinate system  [deg]
 0 			! Lidar_Elevation  	- The beam elevation angles (relative to the (xy) horizontal plane) in the lidar local coordinate system [deg]
 127.05 		! Lidar_RangeGates 	- The lidar measurement range , defined as the radial distance from lidar to the measuring position [m]
+1 ! MC_Mode 					- Motion Compensation mode {0: no MC, 1: full MC)	[-]     

@@ -43,7 +43,7 @@ OutList      							- The next line(s) contains a list of output parameters.  Se
 "XLI"
 "XDTLI"
 "VLOS01LI"
-"BLDBLOCKLI"
+"PTCHLI"
 "BEAMIDLI"
 "NEWDATALI"
 END of FAST input file (the word "END" must appear in the first 3 columns of this last line).

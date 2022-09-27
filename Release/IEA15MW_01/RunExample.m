@@ -29,79 +29,57 @@ copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 ManipulateTXTFile('ROSCO_v2d6.IN','1 ! FlagLAC','0 ! FlagLAC');     % disable LAC
 dos([FASTexeFile,' ',SimulationName,'.fst']);                       % run OpenFAST
 movefile([SimulationName,'.outb'],[SimulationName,'_FB.outb'])      % store results
-[FB_Data, ~, ~, ~, ~]               = ReadFASTbinary([SimulationName,'_FB.outb']);
 
 %% Run FBFF  
 ManipulateTXTFile('ROSCO_v2d6.IN','0 ! FlagLAC','1 ! FlagLAC');     % enable LAC
 dos([FASTexeFile,' ',SimulationName,'.fst']);                       % run OpenFAST
 movefile([SimulationName,'.outb'],[SimulationName,'_FBFF.outb'])    % store results
-[FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary([SimulationName,'_FBFF.outb']);
 
 %% Clean up
 delete(FASTexeFile)
 delete(FASTmapFile)
 
 %% Comparison
-% FB Data
-Time_FB         = FB_Data  (:,strcmp(ChannelName,'Time'));
-Wind1VelX_FB    = FB_Data  (:,strcmp(ChannelName,'Wind1VelX'));  
-BldPitch1_FB    = FB_Data  (:,strcmp(ChannelName,'BldPitch1')); 
-GenTq_FB        = FB_Data  (:,strcmp(ChannelName,'GenTq'));
-RotSpeed_FB     = FB_Data  (:,strcmp(ChannelName,'RotSpeed'));
-TwrBsMyt_FB     = FB_Data  (:,strcmp(ChannelName,'TwrBsMyt')); 
-
-% FBFF Data
-Time_FBFF     	= FBFF_Data(:,strcmp(ChannelName,'Time'));
-Wind1VelX_FBFF	= FBFF_Data(:,strcmp(ChannelName,'Wind1VelX'));  
-BldPitch1_FBFF	= FBFF_Data(:,strcmp(ChannelName,'BldPitch1')); 
-GenTq_FBFF     	= FBFF_Data(:,strcmp(ChannelName,'GenTq'));
-RotSpeed_FBFF 	= FBFF_Data(:,strcmp(ChannelName,'RotSpeed'));
-TwrBsMyt_FBFF 	= FBFF_Data(:,strcmp(ChannelName,'TwrBsMyt')); 
-VLOS01LI_FBFF   = FBFF_Data(:,strcmp(ChannelName,'VLOS01LI')); 
+% read in data
+FB              = ReadFASTbinaryIntoStruct([SimulationName,'_FB.outb']);
+FBFF            = ReadFASTbinaryIntoStruct([SimulationName,'_FBFF.outb']);
 
 % Plot         
 ScreenSize = get(0,'ScreenSize');
 figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4]))
 
-MyAxes(1) = subplot(5,1,1);
+MyAxes(1) = subplot(4,1,1);
 hold on; grid on; box on
-plot(Time_FB,  Wind1VelX_FB);
-plot(Time_FBFF,VLOS01LI_FBFF)
+plot(FB.Time,       FB.Wind1VelX);
+plot(FBFF.Time,     FBFF.VLOS01LI);
 legend('Hub height wind speed','Vlos')
 ylabel('[m/s]');
 legend('Wind1VelX','VLOS01LI')
 
-MyAxes(2) = subplot(5,1,2);
+MyAxes(2) = subplot(4,1,2);
 hold on; grid on; box on
-plot(Time_FB,  BldPitch1_FB);
-plot(Time_FBFF,BldPitch1_FBFF);
+plot(FB.Time,       FB.BldPitch1);
+plot(FBFF.Time,     FBFF.BldPitch1);
 ylabel('BldPitch1 [deg]');
 legend('feedback only','feedback-feedforward')
 
-MyAxes(3) = subplot(5,1,3);
+MyAxes(3) = subplot(4,1,3);
 hold on; grid on; box on
-plot(Time_FB,  GenTq_FB);
-plot(Time_FBFF,GenTq_FBFF);
-ylabel('GenTq [kNm]');
-
-MyAxes(4) = subplot(5,1,4);
-hold on; grid on; box on
-plot(Time_FB,  RotSpeed_FB);
-plot(Time_FBFF,RotSpeed_FBFF);
+plot(FB.Time,       FB.RotSpeed);
+plot(FBFF.Time,     FBFF.RotSpeed);
 ylabel('RotSpeed [rpm]');
 
-MyAxes(5) = subplot(5,1,5);
+MyAxes(4) = subplot(4,1,4);
 hold on; grid on; box on
-plot(Time_FB,  TwrBsMyt_FB);
-plot(Time_FBFF,TwrBsMyt_FBFF);
+plot(FB.Time,       FB.TwrBsMyt);
+plot(FBFF.Time,     FBFF.TwrBsMyt);
 ylabel('TwrBsMyt [kNm]');
 
 xlabel('time [s]')
-
 linkaxes(MyAxes,'x');
 
 % display results
 RatedRotorSpeed = 7.56;
 fprintf('Change in rotor over speed:  %4.1f %%\n',...
-    (max(abs(RotSpeed_FBFF-RatedRotorSpeed))/...
-     max(abs(RotSpeed_FB  -RatedRotorSpeed))-1)*100)
+    (max(abs(FBFF.RotSpeed-RatedRotorSpeed))/...
+     max(abs(FB.RotSpeed  -RatedRotorSpeed))-1)*100)
