@@ -71,9 +71,9 @@ ylabel('RotSpeed [rpm]');
 
 MyAxes(4) = subplot(4,1,4);
 hold on; grid on; box on
-plot(FB.Time,       FB.TwrBsMyt);
-plot(FBFF.Time,     FBFF.TwrBsMyt);
-ylabel('TwrBsMyt [kNm]');
+plot(FB.Time,       FB.TwrBsMyt/1e3);
+plot(FBFF.Time,     FBFF.TwrBsMyt/1e3);
+ylabel('TwrBsMyt [MNm]');
 
 xlabel('time [s]')
 linkaxes(MyAxes,'x');

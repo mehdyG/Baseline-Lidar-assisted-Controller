@@ -39,11 +39,13 @@ ManipulateTXTFile('ROSCO_v2d6.IN','0 ! FlagLAC','1 ! FlagLAC');     % enable LAC
 ManipulateTXTFile('LDP_v2.IN',    '1 ! MC_Mode','0 ! MC_Mode');     % disable MC
 dos([FASTexeFile,' ',SimulationName,'.fst']);                       % run OpenFAST
 movefile([SimulationName,'.outb'],[SimulationName,'_FBFF.outb'])    % store results
+movefile([SimulationName,'.RO.dbg'],[SimulationName,'_FBFF.dbg'])   % store rosco output file
 
 %% Run FBFF with motion compensation 
 ManipulateTXTFile('LDP_v2.IN',    '0 ! MC_Mode','1 ! MC_Mode');     % enable MC
 dos([FASTexeFile,' ',SimulationName,'.fst']);                       % run OpenFAST
 movefile([SimulationName,'.outb'],[SimulationName,'_FBFFMC.outb']) 	% store results
+movefile([SimulationName,'.RO.dbg'],[SimulationName,'_FBFFMC.dbg']) % store rosco output file
 
 %% Clean up
 delete(FASTexeFile)
@@ -54,21 +56,23 @@ delete(FASTmapFile)
 FB              = ReadFASTbinaryIntoStruct([SimulationName,'_FB.outb']);
 FBFF            = ReadFASTbinaryIntoStruct([SimulationName,'_FBFF.outb']);
 FBFFMC          = ReadFASTbinaryIntoStruct([SimulationName,'_FBFFMC.outb']);
+R_FBFF          = ReadROSCOtextIntoStruct([SimulationName,'_FBFF.dbg']);
+R_FBFFMC        = ReadROSCOtextIntoStruct([SimulationName,'_FBFFMC.dbg']);
 
 % Plot         
 ScreenSize = get(0,'ScreenSize');
 figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4]))
+n = 4;
 
-MyAxes(1) = subplot(4,1,1);
+MyAxes(1) = subplot(n,1,1);
 hold on; grid on; box on
 plot(FB.Time,       FB.Wind1VelX);
-plot(FBFF.Time,     FBFF.VLOS01LI);
-plot(FBFFMC.Time,	FBFFMC.VLOS01LI);
-legend('Hub height wind speed','Vlos')
+plot(R_FBFF.Time, 	R_FBFF.REWS);
+plot(R_FBFFMC.Time,	R_FBFFMC.REWS);
+legend('Hub height wind speed','REWS feedback-feedforward','REWS feedback-feedforward with MC')
 ylabel('[m/s]');
-legend('Wind1VelX','VLOS01LI','VLOS01LI with MC')
 
-MyAxes(2) = subplot(4,1,2);
+MyAxes(2) = subplot(n,1,2);
 hold on; grid on; box on
 plot(FB.Time,       FB.BldPitch1);
 plot(FBFF.Time,     FBFF.BldPitch1);
@@ -76,14 +80,14 @@ plot(FBFFMC.Time,	FBFFMC.BldPitch1);
 ylabel('BldPitch1 [deg]');
 legend('feedback only','feedback-feedforward','feedback-feedforward with MC')
 
-MyAxes(3) = subplot(4,1,3);
+MyAxes(3) = subplot(n,1,3);
 hold on; grid on; box on
 plot(FB.Time,       FB.RotSpeed);
 plot(FBFF.Time,     FBFF.RotSpeed);
 plot(FBFFMC.Time,	FBFFMC.RotSpeed);
 ylabel('RotSpeed [rpm]');
 
-MyAxes(4) = subplot(4,1,4);
+MyAxes(4) = subplot(n,1,4);
 hold on; grid on; box on
 plot(FB.Time,       FB.PtfmPitch);
 plot(FBFF.Time,     FBFF.PtfmPitch);
