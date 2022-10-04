@@ -30,7 +30,6 @@ TYPE, PUBLIC :: LidarVariables
     INTEGER(4)                          :: NumberOfBeams                ! Number of beams measuring at different directions	[-]
     REAL(8), DIMENSION(:), ALLOCATABLE  :: Lidar_Azimuth                ! Lidar beam azimuth angles [rad]
     REAL(8), DIMENSION(:), ALLOCATABLE  :: Lidar_Elevation              ! Lidar beam elevation angles [rad]
-    REAL(8)                             :: Lidar_RangeGates             ! Lidar beam range gate [m], single gate is considered in this baseline LDP    
 
 	! ---------- internal variables ----------	
     REAL(8), DIMENSION(:), ALLOCATABLE 	:: X_n_L                		! Normalized lidar beam vector in lidar coordinate system, x-component [-]

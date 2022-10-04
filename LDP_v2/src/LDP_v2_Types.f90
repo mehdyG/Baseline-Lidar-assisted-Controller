@@ -36,7 +36,6 @@ TYPE, PUBLIC :: LidarVariables
     INTEGER(4)                          :: NumberOfBeams                ! Number of beams measuring at different directions	[-]
     REAL(8), DIMENSION(:), ALLOCATABLE  :: Lidar_Azimuth                ! Lidar beam azimuth angles [rad]
     REAL(8), DIMENSION(:), ALLOCATABLE  :: Lidar_Elevation              ! Lidar beam elevation angles [rad]
-    REAL(8)                             :: Lidar_RangeGates             ! Lidar beam range gate [m], single gate is considered in this baseline LDP
 	INTEGER(4)                          :: MC_Mode                		! Motion Compensation mode {0: no MC, 1: full MC)	[-]     
 
 	! ---------- internal variables ----------	

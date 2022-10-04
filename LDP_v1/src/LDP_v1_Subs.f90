@@ -77,7 +77,7 @@ CONTAINS
 
 		! Description:
 		print *, '--------------------------------------------------------------------'
-		print *, 'A baseline lidar data processing algorithm - v1.1'
+		print *, 'A baseline lidar data processing algorithm - v1.2'
 		print *, 'Developed by Flensburg University of Applied Sciences, Germany'
 		print *, '--------------------------------------------------------------------'
 
@@ -138,7 +138,6 @@ CONTAINS
         CALL ParseInput(UnControllerParameters,CurLine,'NumberOfBeams',  	accINFILE(1),LidarVar%NumberOfBeams,	ErrVar)
         CALL ParseAry  (UnControllerParameters,CurLine,'Lidar_Azimuth',   	LidarVar%Lidar_Azimuth,LidarVar%NumberOfBeams, 	accINFILE(1),ErrVar)
         CALL ParseAry  (UnControllerParameters,CurLine,'Lidar_Elevation', 	LidarVar%Lidar_Elevation,LidarVar%NumberOfBeams,accINFILE(1),ErrVar)
-        CALL ParseInput(UnControllerParameters,CurLine,'Lidar_RangeGates',	accINFILE(1),LidarVar%Lidar_RangeGates,	ErrVar)        
               
         ! Close Input File
         CLOSE(UnControllerParameters)

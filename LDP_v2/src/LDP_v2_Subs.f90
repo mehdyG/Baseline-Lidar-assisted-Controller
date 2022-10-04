@@ -85,7 +85,7 @@ CONTAINS
 
 		! Description:
 		print *, '--------------------------------------------------------------------'
-		print *, 'A lidar data processing algorithm with motion compensation - v2.0'
+		print *, 'A lidar data processing algorithm with motion compensation - v2.1'
 		print *, 'Developed by Flensburg University of Applied Sciences, Germany'
 		print *, '--------------------------------------------------------------------'
 
@@ -146,7 +146,6 @@ CONTAINS
         CALL ParseInput(UnControllerParameters,CurLine,'NumberOfBeams',  	accINFILE(1),LidarVar%NumberOfBeams,	ErrVar)
         CALL ParseAry  (UnControllerParameters,CurLine,'Lidar_Azimuth',   	LidarVar%Lidar_Azimuth,LidarVar%NumberOfBeams, 	accINFILE(1),ErrVar)
         CALL ParseAry  (UnControllerParameters,CurLine,'Lidar_Elevation', 	LidarVar%Lidar_Elevation,LidarVar%NumberOfBeams,accINFILE(1),ErrVar)
-        CALL ParseInput(UnControllerParameters,CurLine,'Lidar_RangeGates',	accINFILE(1),LidarVar%Lidar_RangeGates,	ErrVar)        
         CALL ParseInput(UnControllerParameters,CurLine,'MC_Mode',  			accINFILE(1),LidarVar%MC_Mode,			ErrVar)
               
         ! Close Input File
