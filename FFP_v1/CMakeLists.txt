@@ -16,10 +16,10 @@ if(APPLE OR UNIX)
 endif()
 
 set(SOURCES
-    src/FFP.f90
-    src/FFP_Subs.f90
-    src/FFP_Types.f90
-    src/FFP_Subs_ParseInputs.f90
+    src/FFP_v1.f90
+    src/FFP_v1_Subs.f90
+    src/FFP_v1_Types.f90
+    src/FFP_Helpers.f90
 )
 
-add_library(FFP SHARED ${SOURCES})
+add_library(FFP_v1 SHARED ${SOURCES})
