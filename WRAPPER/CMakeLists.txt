@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(DISCON VERSION 2.0.1 LANGUAGES Fortran)
+project(WRAPPER VERSION 2.0.1 LANGUAGES Fortran)
 
 set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/ftnmods")
 
@@ -16,9 +16,10 @@ if(APPLE OR UNIX)
 endif()
 
 set(SOURCES
-    src/DISCON.f90
-    src/DLLChain_Subs.f90
-    src/DLLChain_Types.f90
+    src/WRAPPER.f90
+    src/WRAPPER_Subs.f90
+    src/WRAPPER_Types.f90
+	src/WRAPPER_Helpers.f90
 )
 
-add_library(DISCON SHARED ${SOURCES})
+add_library(WRAPPER SHARED ${SOURCES})

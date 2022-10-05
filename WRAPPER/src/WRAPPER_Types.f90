@@ -11,12 +11,12 @@
 ! Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
 ! -------------------------------------------------------------------------------------------
    
-MODULE DLLChain_Types
+MODULE WRAPPER_Types
 ! Define Types
 USE, INTRINSIC  :: ISO_C_Binding
 IMPLICIT NONE
     
-    TYPE DLLChainParameter_Types
+    TYPE LidarVariables
       INTEGER(4)                                    :: NumberOfsubDLLs
       INTEGER(C_INTPTR_T)                           :: FileAddr                   	!< The address of file FileName.         (RETURN value from LoadLibrary ) [Windows]
       TYPE(C_PTR)                                   :: FileAddrX = C_NULL_PTR      	!< The address of file FileName.         (RETURN value from dlopen ) [Linux]
@@ -25,13 +25,13 @@ IMPLICIT NONE
       CHARACTER(1024), DIMENSION(:), ALLOCATABLE    :: DLLFileName  				!< The name of the DLL file including the full path to the current working directory.
       CHARACTER(1024), DIMENSION(:), ALLOCATABLE    :: DLLInputFileName 			!< The name of the DLL input file including the full path to the current working directory.
       
-    END TYPE DLLChainParameter_Types
+    END TYPE LidarVariables
     
-    TYPE, PUBLIC :: DLLErrorVariables
+    TYPE, PUBLIC :: LidarErrorVariables
     ! Error Catching
     INTEGER(4)                      :: size_avcMSG
     INTEGER(C_INT)                  :: aviFAIL             ! A flag used to indicate the success of this DLL call set as follows: 0 if the DLL call was successful, >0 if the DLL call was successful but cMessage should be issued as a warning messsage, <0 if the DLL call was unsuccessful or for any other reason the simulation is to be stopped at this point with cMessage as the error message.
     CHARACTER(:), ALLOCATABLE       :: ErrMsg              ! a Fortran version of the C string argument (not considered an array here) [subtract 1 for the C null-character]
-    END TYPE DLLErrorVariables
+    END TYPE LidarErrorVariables
     
-END MODULE DLLChain_Types
+END MODULE WRAPPER_Types
