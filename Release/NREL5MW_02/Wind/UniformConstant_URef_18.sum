@@ -1,0 +1,9 @@
+This summary file is not complete it only contains required information for the OpenFAST
+F        Clockwise rotation when looking downwind?
+90  Hub height [m] 
+UBar   =  18 m/s 
+TI(u)  =  0.1 %
+TI(v)  =  0.1 %
+TI(w)  =  0.1 %
+Height Offset =  0 m
+Creating a PERIODIC output file.

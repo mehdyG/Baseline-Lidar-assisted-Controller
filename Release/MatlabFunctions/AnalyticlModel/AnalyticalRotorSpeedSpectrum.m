@@ -11,8 +11,8 @@ function AnalyticalModel = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP
 
 % ROSCOInFileName:       name of the ROSCO DLL input file 
 % RotorPerformanceFile:  name of the turbine rotor performance file, includes Cp Ct Cq
-% LidarInputFileName£º   name of the lidar input file
-% LDPInputFileName£º     name of the lidar data processing DLL input file
+% LidarInputFileName??   name of the lidar input file
+% LDPInputFileName??     name of the lidar data processing DLL input file
 % SpectralModelFileName: name of the ".mat" file that contains the pre-calculated lidar-rotor spectra
 
 
@@ -93,7 +93,7 @@ TimeDelay               = squeeze(-phase_LP_FF)./360./f';
 T_filter                = interp1(f,TimeDelay,f_delay,'linear');  
 Azimuth                 = GetParametersFromText(LDPInputFileName,'Lidar_Azimuth');
 Elevation               = GetParametersFromText(LDPInputFileName,'Lidar_Elevation');
-RangeGate               = GetParametersFromText(LDPInputFileName,'Lidar_RangeGates');
+RangeGate               = 254; %GetParametersFromText(LidarInputFileName,'Lidar_RangeGates');
 x_lead                  = RangeGate(1)*cosd(Azimuth(1))*cosd(Elevation(1));
 T_lead                  = x_lead/v_0_OP;                                         
 [~,phase_PA,~]          = bode(PA,f*2*pi);
