@@ -167,8 +167,12 @@ RotorPerformanceFile     = 'Cp_Ct_Cq.IEA15MW.txt';
 LidarInputFileName       = 'MolasNL400_1G_LidarFile.dat';
 LDPInputFileName         = 'LDP_v2.IN';
 SpectralModelFileName    = 'LidarRotorSpectra_IEA15MW_MolasNL400.mat';
-AnalyticalModel          = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP,f_delay,...
+AnalyticalModel          = AnalyticalRotorSpeedSpectrum_v2(v_0_OP,theta_OP,Omega_OP,f_delay,...
     ROSCOInFileName,RotorPerformanceFile,LidarInputFileName,LDPInputFileName,SpectralModelFileName);
+
+
+
+
 
 
 
@@ -187,11 +191,13 @@ legend([p1 p2],'FB-only Estimated','FBFF Estimated')
 
 figure('Name','Simulation results: Platform Pitch')
 hold on; grid on; box on
-p1 = plot(f_est ,f_est'.*mean(S_PtfmPitch_FB_est,1),'r-');
-p2 = plot(f_est ,f_est'.*mean(S_PtfmPitch_FBFF_est,1),'b-');
+% p1 = plot(f_est ,f_est'.*mean(S_PtfmPitch_FB_est,1),'r-');
+% p2 = plot(f_est ,f_est'.*mean(S_PtfmPitch_FBFF_est,1),'b-');
+p1 = plot(f_est ,mean(S_PtfmPitch_FB_est,1),'r-');
+p2 = plot(f_est ,mean(S_PtfmPitch_FBFF_est,1),'b-');
 
 set(gca,'Xscale','log')
-%set(gca,'Yscale','log')
+set(gca,'Yscale','log')
 xlabel('frequency [Hz] ')
 ylabel('Spectra Platform Pitch [(deg)^2Hz^{-1}]')
 legend([p1 p2],'FB-only Estimated','FBFF Estimated')

@@ -4,7 +4,7 @@
 3             			! NumberofSubDLLs	- The number of sub-DLLs
 "LDP_v2.dll"			! SubDLLName        - The name of the sub-DLL to be called (lidar data processing)
 "LDP_v2.IN"   			! SubDLLInputName   - The name of the sub-DLL input parameter file name
-"FFP_v1.dll" 			! SubDLLName        - The name of the sub-DLL to be called (feedforward controller)
-"FFP_v1.IN"  			! SubDLLInputName   - The name of the sub-DLL input parameter file name
+"FFP_v2.dll" 			! SubDLLName        - The name of the sub-DLL to be called (feedforward controller)
+"FFP_v2.IN"  			! SubDLLInputName   - The name of the sub-DLL input parameter file name
 "ROSCO_v2d6.dll" 		! SubDLLName        - The name of the sub-DLL to be called (feedback controller)
 "ROSCO_v2d6.IN"   		! SubDLLInputName   - The name of the sub-DLL input parameter file name
