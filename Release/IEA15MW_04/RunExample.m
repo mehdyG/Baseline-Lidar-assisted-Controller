@@ -6,7 +6,7 @@
 % and the coherence. In this example, we assume frozen turbulence, only one 
 % 3D turbulence field (y,z,t) at rotor plane is generated.
 % Result:
-% Change in rotor speed standard deviation:  -19.6 %
+% Change in rotor speed standard deviation:  -26.2 %
 % Authors:
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -19,7 +19,7 @@ addpath('..\MatlabFunctions')
 addpath('..\MatlabFunctions\AnalyticlModel')
 
 % Seeds (can be adjusted, but will provide different results)
-nSample             = 5;                        % [-]           number of stochastic turbulence field samples
+nSample             = 6;                        % [-]           number of stochastic turbulence field samples
 Seed_vec            = [1:nSample];              % [-]           vector of seeds
 
 % Parameters postprocessing (can be adjusted, but will provide different results)
@@ -161,7 +161,7 @@ end
 theta_OP                 = 0.2714;
 Omega_OP                 = 0.7920;
 v_0_OP                   = 18;
-f_delay                  = 0.08;
+f_delay                  = 0.019;
 ROSCOInFileName          = 'ROSCO_v2d6.IN';
 RotorPerformanceFile     = 'Cp_Ct_Cq.IEA15MW.txt';
 LidarInputFileName       = 'MolasNL400_1G_LidarFile.dat';
@@ -186,13 +186,12 @@ ylabel('Spectra RotSpeed [(rmp)^2Hz^{-1}]')
 legend([p1 p2],'FB-only Estimated','FBFF Estimated')
 
 figure('Name','Simulation results: Platform Pitch')
-
 hold on; grid on; box on
-p1 = plot(f_est ,mean(S_PtfmPitch_FB_est,1),'r-');
-p2 = plot(f_est ,mean(S_PtfmPitch_FBFF_est,1),'b-');
+p1 = plot(f_est ,f_est'.*mean(S_PtfmPitch_FB_est,1),'r-');
+p2 = plot(f_est ,f_est'.*mean(S_PtfmPitch_FBFF_est,1),'b-');
 
 set(gca,'Xscale','log')
-set(gca,'Yscale','log')
+%set(gca,'Yscale','log')
 xlabel('frequency [Hz] ')
 ylabel('Spectra Platform Pitch [(deg)^2Hz^{-1}]')
 legend([p1 p2],'FB-only Estimated','FBFF Estimated')
