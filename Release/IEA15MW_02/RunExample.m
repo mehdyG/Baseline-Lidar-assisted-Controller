@@ -59,9 +59,14 @@ FBFFMC          = ReadFASTbinaryIntoStruct([SimulationName,'_FBFFMC.outb']);
 R_FBFF          = ReadROSCOtextIntoStruct([SimulationName,'_FBFF.dbg']);
 R_FBFFMC        = ReadROSCOtextIntoStruct([SimulationName,'_FBFFMC.dbg']);
 
-% Plot         
+% Plot  
+set(groot,'defaultFigureColor','w')
+set(groot,'defaultTextFontSize',16)
+set(groot,'defaultAxesFontSize',16)
+set(groot,'defaultLineLineWidth',1.2)
+
 ScreenSize = get(0,'ScreenSize');
-figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4]))
+figure1=figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4]));
 n = 4;
 
 MyAxes(1) = subplot(n,1,1);
@@ -69,34 +74,41 @@ hold on; grid on; box on
 plot(FB.Time,       FB.Wind1VelX);
 plot(R_FBFF.Time, 	R_FBFF.REWS);
 plot(R_FBFFMC.Time,	R_FBFFMC.REWS);
-legend('Hub height wind speed','REWS feedback-feedforward','REWS feedback-feedforward with MC')
+legend('Hub height wind speed','REWS feedback-feedforward','REWS feedback-feedforward with MC','NumColumns',1)
 ylabel('[m/s]');
+% legend box off
 
-MyAxes(2) = subplot(n,1,2);
+MyAxes(3) = subplot(n,1,2);
 hold on; grid on; box on
 plot(FB.Time,       FB.BldPitch1);
 plot(FBFF.Time,     FBFF.BldPitch1);
 plot(FBFFMC.Time,	FBFFMC.BldPitch1);
-ylabel('BldPitch1 [deg]');
-legend('feedback only','feedback-feedforward','feedback-feedforward with MC')
+ylabel({'BldPitch1'; ' [deg]'});
+legend('feedback only','feedback-feedforward','feedback-feedforward with MC','NumColumns',2)
+% legend box off
 
-MyAxes(3) = subplot(n,1,3);
+MyAxes(2) = subplot(n,1,3);
 hold on; grid on; box on
 plot(FB.Time,       FB.RotSpeed);
 plot(FBFF.Time,     FBFF.RotSpeed);
 plot(FBFFMC.Time,	FBFFMC.RotSpeed);
-ylabel('RotSpeed [rpm]');
+ylabel({'RotSpeed '; '[rpm]'});
 
 MyAxes(4) = subplot(n,1,4);
 hold on; grid on; box on
 plot(FB.Time,       FB.PtfmPitch);
 plot(FBFF.Time,     FBFF.PtfmPitch);
 plot(FBFFMC.Time,	FBFFMC.PtfmPitch);
-ylabel('PtfmPitch [deg]');
+ylabel({'PtfmPitch'; '[deg]'});
 
 xlabel('time [s]')
 linkaxes(MyAxes,'x');
 xlim([10 150])
+
+figure1.Renderer='Painters';
+ResizeAndSaveFigure(20,14,'IEA15MW_02.pdf')
+
+
 
 %% display results
 fprintf('Change in platform pitch amplitude (max-min) from FB to FBFF:  %4.1f %%\n',...

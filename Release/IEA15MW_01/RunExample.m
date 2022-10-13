@@ -44,7 +44,12 @@ delete(FASTmapFile)
 FB              = ReadFASTbinaryIntoStruct([SimulationName,'_FB.outb']);
 FBFF            = ReadFASTbinaryIntoStruct([SimulationName,'_FBFF.outb']);
 
-% Plot         
+% Plot 
+set(groot,'defaultFigureColor','w')
+set(groot,'defaultTextFontSize',16)
+set(groot,'defaultAxesFontSize',16)
+set(groot,'defaultLineLineWidth',1.2)
+
 ScreenSize = get(0,'ScreenSize');
 figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4]))
 
@@ -60,23 +65,26 @@ MyAxes(2) = subplot(4,1,2);
 hold on; grid on; box on
 plot(FB.Time,       FB.BldPitch1);
 plot(FBFF.Time,     FBFF.BldPitch1);
-ylabel('BldPitch1 [deg]');
+ylabel({'BldPitch1'; '[deg]'});
 legend('feedback only','feedback-feedforward')
 
 MyAxes(3) = subplot(4,1,3);
 hold on; grid on; box on
 plot(FB.Time,       FB.RotSpeed);
 plot(FBFF.Time,     FBFF.RotSpeed);
-ylabel('RotSpeed [rpm]');
+ylabel({'RotSpeed';'[rpm]'});
 
 MyAxes(4) = subplot(4,1,4);
 hold on; grid on; box on
 plot(FB.Time,       FB.TwrBsMyt/1e3);
 plot(FBFF.Time,     FBFF.TwrBsMyt/1e3);
-ylabel('TwrBsMyt [MNm]');
+ylabel({'TwrBsMyt';'[MNm]'});
 
 xlabel('time [s]')
 linkaxes(MyAxes,'x');
+
+ResizeAndSaveFigure(20,14,'IEA15MW_01.pdf')
+
 
 % display results
 RatedRotorSpeed = 7.56;

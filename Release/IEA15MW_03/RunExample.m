@@ -96,27 +96,6 @@ for iSample = 1:nSample
 end
 
 
-
-% %run a steady state case with FB control only, required to calculate the analytical model 
-% WindFileRoot        = ['Wind\UniformConstant_URef_18'];
-% ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
-% ManipulateTXTFile('IEA-15-240-RWT-Monopile.fst','580   TMax','100   TMax');
-%        
-% 
-% FASTresultFile      = ['SimulationResults\URef_18_Seed_SteadyState.outb'];
-% if ~exist(FASTresultFile,'file')    
-%     ManipulateTXTFile('ROSCO_15MP.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
-%     dos([FASTexeFile,' ',SimulationName,'.fst']);
-%     movefile([SimulationName,'.outb'],FASTresultFile)
-% end
-% 
-% % restore
-% ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
-% ManipulateTXTFile('IEA-15-240-RWT-Monopile.fst','100   TMax','580   TMax');
-%   
-% % get the steady-state data
-% [SteadyState_Data,   ~, ~, ~, ~]             = ReadFASTbinary(FASTresultFile);
-
 % Clean up
 delete(FASTexeFile)
 delete(FASTmapFile)
@@ -180,14 +159,9 @@ AnalyticalModel          = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP
 
 
 %% Plot spectra
-% set(groot,'defaultTextInterpreter','tex')
-% % set(groot,'defaultTextFontWeight','bold')
-% set(groot,'defaultAxesTickLabelInterpreter','tex')
-%set(groot,'defaultAxesFontWeight','normal')
-% set(groot,'defaultLegendInterpreter','tex')
 set(groot,'defaultFigureColor','w')
-set(groot,'defaultTextFontSize',12)
-set(groot,'defaultAxesFontSize',12)
+set(groot,'defaultTextFontSize',14)
+set(groot,'defaultAxesFontSize',14)
 set(groot,'defaultLineLineWidth',1.2)
 
 
@@ -202,10 +176,11 @@ p4 = plot(f_est ,mean(S_RotSpeed_FBFF_est,1),'-','Color',[0.8500 0.3250 0.0980])
 set(gca,'Xscale','log')
 set(gca,'Yscale','log')
 xlabel('frequency [Hz] ')
-ylabel('Spectra RotSpeed [(rmp)^2Hz^{-1}]')
+ylabel('Spectra RotSpeed [(rpm)^2Hz^{-1}]')
 legend([p1 p2 p3 p4],'FB-only Analytical','FBFF Analytical','FB-only Estimated','FBFF Estimated')
 
-% ResizeAndSaveFigure(20,12,'IEA15MW_03.pdf')
+ResizeAndSaveFigure(20,12,'IEA15MW_03.pdf')
+
 
 
 

@@ -6,7 +6,8 @@
 % and the coherence. In this example, we assume frozen turbulence, only one 
 % 3D turbulence field (y,z,t) at rotor plane is generated.
 % Result:
-% Change in rotor speed standard deviation:  -26.2 %
+% Change in rotor speed standard deviation:  -35.7%
+% Change in platform pitch standard deviation:  -19.4%
 % Authors:
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -119,11 +120,13 @@ for iSample = 1:nSample
     Time_FB         = FB_Data(:,strcmp(ChannelName,'Time'));
     RotSpeed_FB     = FB_Data(:,strcmp(ChannelName,'RotSpeed'));
     PtfmPitch_FB    = FB_Data(:,strcmp(ChannelName,'PtfmPitch'));
-
+    TwrBsMyt_FB     = FB_Data(:,strcmp(ChannelName,'TwrBsMyt'));
+    
     % Get signals from FBFF Data
     Time_FBFF     	= FBFF_Data(:,strcmp(ChannelName,'Time'));
     RotSpeed_FBFF 	= FBFF_Data(:,strcmp(ChannelName,'RotSpeed'));  
-    PtfmPitch_FBFF    = FBFF_Data(:,strcmp(ChannelName,'PtfmPitch'));
+    PtfmPitch_FBFF  = FBFF_Data(:,strcmp(ChannelName,'PtfmPitch'));
+    TwrBsMyt_FBFF   = FBFF_Data(:,strcmp(ChannelName,'TwrBsMyt'));
 
     
     wind = FBFF_Data(:,strcmp(ChannelName,'Wind1VelX'));
@@ -151,6 +154,8 @@ for iSample = 1:nSample
     STD_RotSpeed_FBFF(iSample)              = std(RotSpeed_FBFF (Time_FB>t_start));
     STD_PtfmPitch_FB  (iSample)             = std(PtfmPitch_FB   (Time_FB>t_start));
     STD_PtfmPitch_FBFF(iSample)             = std(PtfmPitch_FBFF (Time_FB>t_start));
+    STD_TwrBsMyt_FB  (iSample)             = std(TwrBsMyt_FB   (Time_FB>t_start));
+    STD_TwrBsMyt_FBFF(iSample)             = std(TwrBsMyt_FBFF (Time_FB>t_start));
     
 
 end
@@ -167,8 +172,8 @@ RotorPerformanceFile     = 'Cp_Ct_Cq.IEA15MW.txt';
 LidarInputFileName       = 'MolasNL400_1G_LidarFile.dat';
 LDPInputFileName         = 'LDP_v2.IN';
 SpectralModelFileName    = 'LidarRotorSpectra_IEA15MW_MolasNL400.mat';
-AnalyticalModel          = AnalyticalRotorSpeedSpectrum_v2(v_0_OP,theta_OP,Omega_OP,f_delay,...
-    ROSCOInFileName,RotorPerformanceFile,LidarInputFileName,LDPInputFileName,SpectralModelFileName);
+% AnalyticalModel          = AnalyticalRotorSpeedSpectrum_v2(v_0_OP,theta_OP,Omega_OP,f_delay,...
+%     ROSCOInFileName,RotorPerformanceFile,LidarInputFileName,LDPInputFileName,SpectralModelFileName);
 
 
 
@@ -177,30 +182,26 @@ AnalyticalModel          = AnalyticalRotorSpeedSpectrum_v2(v_0_OP,theta_OP,Omega
 
 
 %% Plot spectra
+set(groot,'defaultFigureColor','w')
+set(groot,'defaultTextFontSize',14)
+set(groot,'defaultAxesFontSize',14)
+set(groot,'defaultLineLineWidth',1.2)
+
+
 figure('Name','Simulation results: Rotor Speed')
-
 hold on; grid on; box on
-p1 = plot(f_est ,mean(S_RotSpeed_FB_est,1),'r-');
-p2 = plot(f_est ,mean(S_RotSpeed_FBFF_est,1),'b-');
+p1 = plot(f_est ,mean(S_RotSpeed_FB_est,1),'-','Color',[0 0.4470 0.7410]);
+p2 = plot(f_est ,mean(S_RotSpeed_FBFF_est,1),'-','Color',[0.8500 0.3250 0.0980]);
+p3 = plot(f_est ,mean(S_PtfmPitch_FB_est,1),'-','Color',[0.9290 0.6940 0.1250]);
+p4 = plot(f_est ,mean(S_PtfmPitch_FBFF_est,1),'-','Color',[0.3010 0.7450 0.9330]);
 
 set(gca,'Xscale','log')
 set(gca,'Yscale','log')
 xlabel('frequency [Hz] ')
-ylabel('Spectra RotSpeed [(rmp)^2Hz^{-1}]')
-legend([p1 p2],'FB-only Estimated','FBFF Estimated')
+ylabel('Spectra [(rpm or deg)^2Hz^{-1}]')
+legend([p1 p2 p3 p4],'RotSpeed, FB-only Estimated','RotSpeed, FBFF Estimated','PtfmPitch, FB-only Estimated','PtfmPitch, FBFF Estimated')
 
-figure('Name','Simulation results: Platform Pitch')
-hold on; grid on; box on
-% p1 = plot(f_est ,f_est'.*mean(S_PtfmPitch_FB_est,1),'r-');
-% p2 = plot(f_est ,f_est'.*mean(S_PtfmPitch_FBFF_est,1),'b-');
-p1 = plot(f_est ,mean(S_PtfmPitch_FB_est,1),'r-');
-p2 = plot(f_est ,mean(S_PtfmPitch_FBFF_est,1),'b-');
-
-set(gca,'Xscale','log')
-set(gca,'Yscale','log')
-xlabel('frequency [Hz] ')
-ylabel('Spectra Platform Pitch [(deg)^2Hz^{-1}]')
-legend([p1 p2],'FB-only Estimated','FBFF Estimated')
+ResizeAndSaveFigure(20,12,'IEA15MW_04.pdf')
 
 
 
