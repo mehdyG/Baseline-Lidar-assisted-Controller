@@ -92,8 +92,8 @@ TYPE, PUBLIC :: ControlParameters
     INTEGER(IntKi)                :: SD_Mode                     ! Shutdown mode {0 - no shutdown procedure, 1 - pitch to max pitch at shutdown}
     REAL(DbKi)                    :: SD_MaxPit                   ! Maximum blade pitch angle to initiate shutdown, [rad]
     REAL(DbKi)                    :: SD_CornerFreq               ! Cutoff Frequency for first order low-pass filter for blade pitch angle, [rad/s]
-    INTEGER(IntKi)                :: Fl_Mode                     ! Floating specific feedback mode {0 - no nacelle velocity feedback, 1 - nacelle velocity feedback}
-    REAL(DbKi)                    :: Fl_Kp                       ! Nacelle velocity proportional feedback gain [s]
+    INTEGER(IntKi)                :: Fl_Mode                     ! Floating specific feedback mode {0 - no nacelle velocity feedback, 1 - nacelle velocity feedback, 2 - platform pitch rate feedback}
+    REAL(DbKi)                    :: Fl_Kp                       ! Nacelle velocity or platform pitch rate proportional feedback gain [s]
     INTEGER(IntKi)                :: Flp_Mode                    ! Flap actuator mode {0 - off, 1 - fixed flap position, 2 - PI flap control}
     REAL(DbKi)                    :: Flp_Angle                   ! Fixed flap angle (degrees)
     REAL(DbKi)                    :: Flp_Kp                      ! PI flap control proportional gain
@@ -266,6 +266,10 @@ TYPE, PUBLIC :: LocalVariables
     REAL(DbKi)                    :: REWS_f                       ! rotor effective wind from lidar LPF filtered
     REAL(DbKi)                    :: REWS_b                       ! rotor effective wind filter and buffered for FF
     
+    ! FG: variables for floater damping control
+    REAL(DbKi)                    :: PltFormPtchRate            ! PlatForm pitch rate 
+    REAL(DbKi)                    :: PltFormPtchRateF           ! Filtered PlatForm pitch rate 
+
     
 END TYPE LocalVariables
 

@@ -61,6 +61,9 @@ CONTAINS
         LocalVar%FF_PitchRate       = avrSWAP(L + 2 + NINT(avrSWAP(L+ 2)) + 9) 	!avrSWAP(L+ 2) gates per beam
         LocalVar%REWS_f             = avrSWAP(L + 2 + NINT(avrSWAP(L+ 2)) + 10) !avrSWAP(L+ 2) gates per beam
 		
+        ! FG: added for Floating platform damping control
+        LocalVar%PltFormPtchRate    = avrSWAP(85)
+        
 				
         ! --- NJA: usually feedback back the previous pitch command helps for numerical stability, sometimes it does not...
         IF (LocalVar%iStatus == 0) THEN
@@ -75,6 +78,9 @@ CONTAINS
             LocalVar%BlPitch(2) = LocalVar%PitCom(2)
             LocalVar%BlPitch(3) = LocalVar%PitCom(3)      
         ENDIF
+        
+        
+        
 
         IF (LocalVar%iStatus == 0) THEN
             LocalVar%restart = .True.
@@ -660,9 +666,9 @@ CONTAINS
         ENDIF
 
         ! Fl_Mode
-        IF ((CntrPar%Fl_Mode < 0) .OR. (CntrPar%Fl_Mode > 2)) THEN
+        IF ((CntrPar%Fl_Mode < 0) .OR. (CntrPar%Fl_Mode > 3)) THEN
             ErrVar%aviFAIL = -1
-            ErrVar%ErrMsg  = 'Fl_Mode must be 0, 1, or 2.'
+            ErrVar%ErrMsg  = 'Fl_Mode must be 0, 1, 2, or 3.'
         ENDIF
 
         ! Flp_Mode

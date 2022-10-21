@@ -1,0 +1,28 @@
+! Load variables from calling program (See Appendix A of Bladed User's Guide):
+        	LidarVar%iStatus            = NINT(avrSWAP(1))      ! Initialization status       
+        
+        ! --- read and set the lidar variables
+        L                           = NINT(avrSWAP(63))     ! The index in the array where the lidar related data begins 
+        
+        !> NewData
+        LidarVar%NewMeasurementFlag = NINT(avrSWAP(L))      ! Flag whether the current measurement is a new one
+       
+        !> BeamID
+       	LidarVar%BeamID             = NINT(avrSWAP(L+1))    ! Lidar beam number of the current lidar measurement
+       
+        !> Gates per beam
+        LidarVar%GatesPerBeam    	= NINT(avrSWAP(L + 2)) 	! Number of range gate, for this reference version, only one range gate is supported 
+                                                             
+        !> Lidar line-of-sight speed measurement
+        LidarVar%v_los              = avrSWAP(L + 2 + 1 )  
+		
+        !> roll, pitch and yaw angles in [rad] and velocities in x, y, z in [m/s] of lidar system
+        LidarVar%Lidar_Roll         = avrSWAP(L + 2 + (LidarVar%GatesPerBeam) + 1)
+        LidarVar%Lidar_Pitch        = avrSWAP(L + 2 + (LidarVar%GatesPerBeam) + 2) 
+        LidarVar%Lidar_Yaw          = avrSWAP(L + 2 + (LidarVar%GatesPerBeam) + 3)
+        LidarVar%Lidar_xd           = avrSWAP(L + 2 + (LidarVar%GatesPerBeam) + 4)
+        LidarVar%Lidar_yd           = avrSWAP(L + 2 + (LidarVar%GatesPerBeam) + 5)
+        LidarVar%Lidar_zd           = avrSWAP(L + 2 + (LidarVar%GatesPerBeam) + 6)		
+      
+        !> Index for LDP outputs
+        LidarVar%AvrIndex_REWS   	= L + 2 + (LidarVar%GatesPerBeam) + 7            ! Rotor effective wind speed
