@@ -7,13 +7,14 @@
 % pitch feedforward controller (designed with SLOW) together with a motion
 % compensation (MC) is able to reduce significantly the rotor speed 
 % variation when OpenFAST is disturbed by an Extreme Operating Gust. 
-% The platfrom damper is alse activated.
-% Here, all DOFs are enabled. If no MC is applied, the system is instable.
+% Here, all DOFs are enabled. 
+% A new platform damper using the platform pitch rate is also activated.
+% This avoids the instablity of the FF without MC.
 % Result:       
 % Change in platform pitch amplitude (max-min) from FB to FBFF:   -58.9%
 % Change in platform pitch amplitude (max-min) from FB to FBFFMC:   -71.0%
 % Authors: 		
-% David Schlipf, Feng Guo, Frank Lemmer
+% Feng Guo, David Schlipf, Frank Lemmer
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
 % and sowento GmbH
 
@@ -57,17 +58,12 @@ delete(FASTmapFile)
 FB              = ReadFASTbinaryIntoStruct([SimulationName,'_FB.outb']);
 FBFF            = ReadFASTbinaryIntoStruct([SimulationName,'_FBFF.outb']);
 FBFFMC          = ReadFASTbinaryIntoStruct([SimulationName,'_FBFFMC.outb']);
-R_FBFF          = ReadROSCOtextIntoStruct([SimulationName,'_FBFF.dbg']);
-R_FBFFMC        = ReadROSCOtextIntoStruct([SimulationName,'_FBFFMC.dbg']);
+R_FBFF          = ReadROSCOtextIntoStruct ([SimulationName,'_FBFF.dbg']);
+R_FBFFMC        = ReadROSCOtextIntoStruct ([SimulationName,'_FBFFMC.dbg']);
 
 % Plot  
-set(groot,'defaultFigureColor','w')
-set(groot,'defaultTextFontSize',16)
-set(groot,'defaultAxesFontSize',16)
-set(groot,'defaultLineLineWidth',1.2)
-
 ScreenSize = get(0,'ScreenSize');
-figure1=figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4]));
+figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4]));
 n = 4;
 
 MyAxes(1) = subplot(n,1,1);
@@ -77,7 +73,6 @@ plot(R_FBFF.Time, 	R_FBFF.REWS);
 plot(R_FBFFMC.Time,	R_FBFFMC.REWS);
 legend('Hub height wind speed','REWS feedback-feedforward','REWS feedback-feedforward with MC','NumColumns',1)
 ylabel('[m/s]');
-% legend box off
 
 MyAxes(3) = subplot(n,1,2);
 hold on; grid on; box on
@@ -86,7 +81,6 @@ plot(FBFF.Time,     FBFF.BldPitch1);
 plot(FBFFMC.Time,	FBFFMC.BldPitch1);
 ylabel({'BldPitch1'; ' [deg]'});
 legend('feedback only','feedback-feedforward','feedback-feedforward with MC','NumColumns',2)
-% legend box off
 
 MyAxes(2) = subplot(n,1,3);
 hold on; grid on; box on
@@ -105,11 +99,6 @@ ylabel({'PtfmPitch'; '[deg]'});
 xlabel('time [s]')
 linkaxes(MyAxes,'x');
 xlim([10 150])
-
-figure1.Renderer='Painters';
-ResizeAndSaveFigure(20,14,'IEA15MW_05.pdf')
-
-
 
 %% display results
 fprintf('Change in platform pitch amplitude (max-min) from FB to FBFF:  %4.1f %%\n',...
