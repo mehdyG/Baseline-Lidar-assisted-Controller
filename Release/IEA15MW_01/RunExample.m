@@ -45,11 +45,6 @@ FB              = ReadFASTbinaryIntoStruct([SimulationName,'_FB.outb']);
 FBFF            = ReadFASTbinaryIntoStruct([SimulationName,'_FBFF.outb']);
 
 % Plot 
-set(groot,'defaultFigureColor','w')
-set(groot,'defaultTextFontSize',16)
-set(groot,'defaultAxesFontSize',16)
-set(groot,'defaultLineLineWidth',1.2)
-
 ScreenSize = get(0,'ScreenSize');
 figure('Name','Simulation results','position',[.1 .1 .8 .8].*ScreenSize([3,4,3,4]))
 
@@ -82,9 +77,6 @@ ylabel({'TwrBsMyt';'[MNm]'});
 
 xlabel('time [s]')
 linkaxes(MyAxes,'x');
-
-ResizeAndSaveFigure(20,14,'IEA15MW_01.pdf')
-
 
 % display results
 RatedRotorSpeed = 7.56;
