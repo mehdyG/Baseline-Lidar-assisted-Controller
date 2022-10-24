@@ -15,7 +15,7 @@ V_hub       = 18;                   % [m/s] mean wind speed at hub height
 T_gust      = 10.5;                 % [s]   length of EOG
 t_start     = 15;                   % [s]   time when EOG should start
 V_ref       = 50;                   % [m/s] reference wind speed average over 10 min
-I_ref       = 0.16;                 % [-]   expected value of the turbulence intensity at 15 m/s
+I_ref       = 0.14;                 % [-]   expected value of the turbulence intensity at 15 m/s
 D           = 240;                  % [m]   rotor diameter
 
 % calculation of wind signals

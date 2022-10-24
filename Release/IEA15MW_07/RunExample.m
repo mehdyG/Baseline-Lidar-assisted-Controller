@@ -1,4 +1,5 @@
-% LAC Test IEA15MW_03:  IEA 15 MW + Realistic wind preview
+% LAC Test IEA15MW_07:  IEA 15 MW + Realistic wind preview using 4D Mann
+% turbulence model(include turbulence evolution)
 % Purpose:
 % Here, we use a realistic wind preview to demonstrate that the collective
 % pitch feedforward controller together with the correct filtering provides
@@ -6,9 +7,9 @@
 % and the coherence. In this example, we assume frozen turbulence, only one 
 % 3D turbulence field (y,z,t) at rotor plane is generated.
 % Result:
-% Change in rotor speed standard deviation:  -19.6 %
+% Change in rotor speed standard deviation:  -22.3 %
 % Authors:
-% David Schlipf, Feng Guo
+% Feng Guo, Wei Fu, David Schlipf
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
 
 %% Setup
@@ -17,9 +18,10 @@ close all;
 clc;
 addpath('..\MatlabFunctions')
 addpath('..\MatlabFunctions\AnalyticlModel')
+addpath('MannTurbFunctions')
 
 % Seeds (can be adjusted, but will provide different results)
-nSample             = 6;                        % [-]           number of stochastic turbulence field samples
+nSample             = 1;                        % [-]           number of stochastic turbulence field samples
 Seed_vec            = [1:nSample];              % [-]           vector of seeds
 
 % Parameters postprocessing (can be adjusted, but will provide different results)
@@ -30,11 +32,11 @@ nFFT                = [];                       % [-]           number of FFT, d
 nOverlap            = [];                       % [-]           samples of overlap, default: 50% overlap
 
 % Files (should not be be changed)
-TurbSimExeFile      = 'TurbSim_x64.exe';
+MannTurbExeFile     = 'MannTurb4D_v2.exe';
 FASTexeFile         = 'openfast_x64.exe';
 FASTmapFile         = 'MAP_x64.dll';
 SimulationName      = 'IEA-15-240-RWT-Monopile';
-TurbSimTemplateFile = 'TurbSim2aInputFileTemplateIEA15MW.inp';
+MannTurbTemplateFile = 'InputSample4DMann.inp';
 if ~exist('TurbulentWind','dir')
     mkdir TurbulentWind
 end
@@ -44,22 +46,52 @@ end
 %% Preprocessing: generate turbulent wind field
     
 % Copy the adequate TurbSim version to the example folder 
-copyfile(['..\TurbSim\',TurbSimExeFile],['TurbulentWind\',TurbSimExeFile])
-    
+copyfile(['..\MannTurb4D\',MannTurbExeFile],['TurbulentWind\',MannTurbExeFile])
+copyfile(['..\MannTurb4D\',MannTurbExeFile],['TurbulentWind\',MannTurbTemplateFile])
+      
 % Generate all wind fields
 for iSample = 1:nSample        
-    Seed                = Seed_vec(iSample);
-    TurbSimInputFile  	= ['TurbulentWind\URef_18_Seed_',num2str(Seed,'%02d'),'.ipt'];
-    TurbSimResultFile  	= ['TurbulentWind\URef_18_Seed_',num2str(Seed,'%02d'),'.wnd'];
+    Seed             = Seed_vec(iSample);
+    TurbSimResultFile= ['TurbulentWind\Mann_URef_18_Seed_',num2str(Seed,'%02d'),'.wnd'];
+    MannTurb         = MannTurbConfig_IEC('Neutral_IEC1B',18);
+%     MannTurb         = GetMannTensorAndLifeTime(MannTurb,25);
+    %MannTurb         = MannTurbConfig('Stable_IEC1A_L30',16);
+    fd               = 240;
+    MannTurb         = MannTurbFieldConfig('4096x32x40_8m_H150',MannTurb,[0 fd/MannTurb.URef],iSample); % Unfrozen at certain planes!! FG, please adjust df according to your lidar      
+    
     if ~exist(TurbSimResultFile,'file')
-        copyfile([TurbSimTemplateFile],TurbSimInputFile)
-        ManipulateTXTFile(TurbSimInputFile,'MyRandSeed1',num2str(Seed));% adjust seed
-        dos(['TurbulentWind\',TurbSimExeFile,' ',TurbSimInputFile]);
+    MannTurb         = GenerateMann4DTurb(MannTurb,'TurbulentWind','TurbulentWind');
+    MannTurb         = GetVelocityField(MannTurb,'TurbulentWind',1);
+                       MannTurbtoBladedEvo(MannTurb,'TurbulentWind');                   
+    % rename file
+    movefile(['TurbulentWind\' MannTurb.Field.CaseName '.wnd'], ['TurbulentWind\Mann_URef_18_Seed_' num2str(Seed,'%02d'),'.wnd']); 
+    movefile(['TurbulentWind\' MannTurb.Field.CaseName '.sum'], ['TurbulentWind\Mann_URef_18_Seed_' num2str(Seed,'%02d'),'.sum']); 
+    movefile(['TurbulentWind\' MannTurb.Field.CaseName '.evo'], ['TurbulentWind\Mann_URef_18_Seed_' num2str(Seed,'%02d'),'.evo']); 
+    
+    delete(['TurbulentWind\' MannTurb.Field.CaseName '.mt4d'])
+    delete(['TurbulentWind\' MannTurb.Field.CaseName '.inp'])
     end
+%     TurbSimInputFile  	= ['TurbulentWind\Mann_URef_18_Seed_',num2str(Seed,'%02d'),'.ipt'];
+%     TurbSimResultFile  	= ['TurbulentWind\Mann_URef_18_Seed_',num2str(Seed,'%02d'),'.wnd'];
+%     if ~exist(TurbSimResultFile,'file')
+%         copyfile([TurbSimTemplateFile],TurbSimInputFile)
+%         ManipulateTXTFile(TurbSimInputFile,'MyRandSeed1',num2str(Seed));% adjust seed
+%         dos(['TurbulentWind\',TurbSimExeFile,' ',TurbSimInputFile]);
+%     end
+%     
+%     MannTurb         = MannTurbConfig_IEC('Neutral_IEC1B',18);
+%     Turbulence.alpha_shear = 0.14; % for offshore according to IEC
+%     MannTurb         = GetMannTensorAndLifeTime(MannTurb,25);
+%     %MannTurb         = MannTurbConfig('Stable_IEC1A_L30',16);
+%     MannTurb         = MannTurbFieldConfig('4096x64x64_8m_H150',MannTurb,[0 Lidar.Trajectory.RangeX(1)./MannTurb.URef],iSeed); % Unfrozen at certain planes [0 50 110 170]         
+%     MannTurb         = GenerateMann4DTurb(MannTurb,'TurbResultsMann','MannTurb4D');
+%     MannTurb         = GetVelocityField(MannTurb,'TurbResultsMann',1);
+%                        MannTurbtoBladedEvo(MannTurb,'TurbResultsMann');
 end
     
 % Clean up
-delete(['TurbulentWind\',TurbSimExeFile])
+delete(['TurbulentWind\',MannTurbExeFile])
+delete(['TurbulentWind\',MannTurbTemplateFile])
 
 %% Processing: run simulations
 
@@ -72,7 +104,7 @@ for iSample = 1:nSample
     
     % Adjust the InflowWind file
     Seed                = Seed_vec(iSample);
-    WindFileRoot        = ['TurbulentWind\URef_18_Seed_',num2str(Seed,'%02d')];
+    WindFileRoot        = ['TurbulentWind\Mann_URef_18_Seed_',num2str(Seed,'%02d')];
     ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
     
     % Run FB    

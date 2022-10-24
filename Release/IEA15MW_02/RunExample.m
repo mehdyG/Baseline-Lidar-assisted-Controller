@@ -9,8 +9,8 @@
 % variation when OpenFAST is disturbed by an Extreme Operating Gust. 
 % Here, all DOFs are enabled. If no MC is applied, the system is instable.
 % Result:       
-% Change in platform pitch amplitude (max-min) from FB to FBFF:  200.5 %
-% Change in platform pitch amplitude (max-min) from FB to FBFFMC:  -63.5 %
+% Change in platform pitch amplitude (max-min) from FB to FBFF:  128.5 %
+% Change in platform pitch amplitude (max-min) from FB to FBFFMC:  -71.5 %
 % Authors: 		
 % David Schlipf, Feng Guo, Frank Lemmer
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
