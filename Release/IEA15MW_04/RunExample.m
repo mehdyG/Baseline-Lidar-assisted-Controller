@@ -6,8 +6,8 @@
 % and the coherence. In this example, we assume frozen turbulence, only one 
 % 3D turbulence field (y,z,t) at rotor plane is generated.
 % Result:
-% Change in rotor speed standard deviation:  -35.7%
-% Change in platform pitch standard deviation:  -19.4%
+% Change in rotor speed standard deviation:  -25.9%
+% Change in platform pitch standard deviation:  -11.8%
 % Authors:
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -112,50 +112,37 @@ for iSample = 1:nSample
     % Load data
     Seed                = Seed_vec(iSample);
     FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
-    [FB_Data,   ~, ~, ~, ~]             = ReadFASTbinary(FASTresultFile);
+    FB_Data             = ReadFASTbinaryIntoStruct(FASTresultFile);
     FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
-    [FBFF_Data, ChannelName, ~, ~, ~] 	= ReadFASTbinary(FASTresultFile);
-
-    % Get signals from FB Data
-    Time_FB         = FB_Data(:,strcmp(ChannelName,'Time'));
-    RotSpeed_FB     = FB_Data(:,strcmp(ChannelName,'RotSpeed'));
-    PtfmPitch_FB    = FB_Data(:,strcmp(ChannelName,'PtfmPitch'));
-    TwrBsMyt_FB     = FB_Data(:,strcmp(ChannelName,'TwrBsMyt'));
-    
-    % Get signals from FBFF Data
-    Time_FBFF     	= FBFF_Data(:,strcmp(ChannelName,'Time'));
-    RotSpeed_FBFF 	= FBFF_Data(:,strcmp(ChannelName,'RotSpeed'));  
-    PtfmPitch_FBFF  = FBFF_Data(:,strcmp(ChannelName,'PtfmPitch'));
-    TwrBsMyt_FBFF   = FBFF_Data(:,strcmp(ChannelName,'TwrBsMyt'));
+    FBFF_Data             = ReadFASTbinaryIntoStruct(FASTresultFile);
 
     
-    wind = FBFF_Data(:,strcmp(ChannelName,'Wind1VelX'));
 
-    % Plot time results
-%     figure('Name',['Seed ',num2str(Seed)])
-%     hold on; grid on; box on
-%     plot(Time_FB,  RotSpeed_FB);
-%     plot(Time_FBFF,RotSpeed_FBFF);
-%     ylabel('RotSpeed [rpm]');
-%     legend('feedback only','feedback-feedforward')
-%     xlabel('time [s]')
+%    Plot time results
+    figure('Name',['Seed ',num2str(Seed)])
+    hold on; grid on; box on
+    plot(FB_Data.Time,  FB_Data.RotSpeed);
+    plot(FBFF_Data.Time,FBFF_Data.RotSpeed);
+    ylabel('RotSpeed [rpm]');
+    legend('feedback only','feedback-feedforward')
+    xlabel('time [s]')
 
     % Estimate spectra
     Fs                                      = 80; % [Hz]  sampling frequenzy, same as in *.fst
-    [S_RotSpeed_FB_est(iSample,:),f_est]	= pwelch(detrend(RotSpeed_FB  (Time_FB>t_start)),  vWindow,nOverlap,nFFT,Fs);
-    [S_RotSpeed_FBFF_est(iSample,:),~]      = pwelch(detrend(RotSpeed_FBFF(Time_FBFF>t_start)),vWindow,nOverlap,nFFT,Fs);
-    [S_PtfmPitch_FB_est(iSample,:),f_est]	= pwelch(detrend(PtfmPitch_FB  (Time_FB>t_start)),  vWindow,nOverlap,nFFT,Fs);
-    [S_PtfmPitch_FBFF_est(iSample,:),~]     = pwelch(detrend(PtfmPitch_FBFF(Time_FBFF>t_start)),vWindow,nOverlap,nFFT,Fs);
+    [S_RotSpeed_FB_est(iSample,:),f_est]	= pwelch(detrend(FB_Data.RotSpeed  (FB_Data.Time>t_start)),  vWindow,nOverlap,nFFT,Fs);
+    [S_RotSpeed_FBFF_est(iSample,:),~]      = pwelch(detrend(FBFF_Data.RotSpeed(FBFF_Data.Time>t_start)),vWindow,nOverlap,nFFT,Fs);
+    [S_PtfmPitch_FB_est(iSample,:),f_est]	= pwelch(detrend(FB_Data.PtfmPitch  (FB_Data.Time>t_start)),  vWindow,nOverlap,nFFT,Fs);
+    [S_PtfmPitch_FBFF_est(iSample,:),~]     = pwelch(detrend(FBFF_Data.PtfmPitch(FBFF_Data.Time>t_start)),vWindow,nOverlap,nFFT,Fs);
     
     
     
     % Calculate standard deviation
-    STD_RotSpeed_FB  (iSample)              = std(RotSpeed_FB   (Time_FB>t_start));
-    STD_RotSpeed_FBFF(iSample)              = std(RotSpeed_FBFF (Time_FB>t_start));
-    STD_PtfmPitch_FB  (iSample)             = std(PtfmPitch_FB   (Time_FB>t_start));
-    STD_PtfmPitch_FBFF(iSample)             = std(PtfmPitch_FBFF (Time_FB>t_start));
-    STD_TwrBsMyt_FB  (iSample)             = std(TwrBsMyt_FB   (Time_FB>t_start));
-    STD_TwrBsMyt_FBFF(iSample)             = std(TwrBsMyt_FBFF (Time_FB>t_start));
+    STD_RotSpeed_FB  (iSample)              = std(FB_Data.RotSpeed   (FB_Data.Time>t_start));
+    STD_RotSpeed_FBFF(iSample)              = std(FBFF_Data.RotSpeed (FBFF_Data.Time>t_start));
+    STD_PtfmPitch_FB  (iSample)             = std(FB_Data.PtfmPitch   (FB_Data.Time>t_start));
+    STD_PtfmPitch_FBFF(iSample)             = std(FBFF_Data.PtfmPitch (FBFF_Data.Time>t_start));
+    STD_TwrBsMyt_FB  (iSample)              = std(FB_Data.TwrBsMyt   (FB_Data.Time>t_start));
+    STD_TwrBsMyt_FBFF(iSample)              = std(FBFF_Data.TwrBsMyt (FBFF_Data.Time>t_start));
     
 
 end
@@ -182,11 +169,6 @@ SpectralModelFileName    = 'LidarRotorSpectra_IEA15MW_MolasNL400.mat';
 
 
 %% Plot spectra
-set(groot,'defaultFigureColor','w')
-set(groot,'defaultTextFontSize',14)
-set(groot,'defaultAxesFontSize',14)
-set(groot,'defaultLineLineWidth',1.2)
-
 
 figure('Name','Simulation results: Rotor Speed')
 hold on; grid on; box on
@@ -201,7 +183,6 @@ xlabel('frequency [Hz] ')
 ylabel('Spectra [(rpm or deg)^2Hz^{-1}]')
 legend([p1 p2 p3 p4],'RotSpeed, FB-only Estimated','RotSpeed, FBFF Estimated','PtfmPitch, FB-only Estimated','PtfmPitch, FBFF Estimated')
 
-ResizeAndSaveFigure(20,12,'IEA15MW_04.pdf')
 
 
 
@@ -213,3 +194,6 @@ fprintf('Change in rotor speed standard deviation:  %4.1f %%\n',...
 
 fprintf('Change in platform pitch standard deviation:  %4.1f %%\n',...
     (mean(STD_PtfmPitch_FBFF)/mean(STD_PtfmPitch_FB)-1)*100)       
+
+fprintf('Change in tower base fore-aft bending moment standard deviation:  %4.1f %%\n',...
+    (mean(STD_TwrBsMyt_FBFF)/mean(STD_TwrBsMyt_FB)-1)*100)       

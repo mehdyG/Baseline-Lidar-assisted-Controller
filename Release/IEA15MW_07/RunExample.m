@@ -196,4 +196,5 @@ legend([p1 p2 p3 p4],'FB-only Analytical','FBFF Analytical','FB-only Estimated',
 
 % display results
 fprintf('Change in rotor speed standard deviation:  %4.1f %%\n',...
-    (mean(STD_RotSpeed_FBFF)/mean(STD_RotSpeed_FB)-1)*100)       
+    (mean(STD_RotSpeed_FBFF)/mean(STD_RotSpeed_FB)-1)*100)   
+

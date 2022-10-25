@@ -7,8 +7,8 @@
 % and the coherence. In this example, we assume frozen turbulence, only one 
 % 3D turbulence field (y,z,t) at rotor plane is generated.
 % Result:
-% Change in rotor speed standard deviation:  -37.4%
-% Change in platform pitch standard deviation:  -29.6%
+% Change in rotor speed standard deviation:  -33.1%
+% Change in platform pitch standard deviation:  -27.0%
 % Authors:
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -151,20 +151,20 @@ for iSample = 1:nSample
 
     % Estimate spectra
     Fs                                      = 80; % [Hz]  sampling frequenzy, same as in *.fst
-    [S_RotSpeed_FB_est(iSample,:),f_est]	= pwelch(detrend(RotSpeed_FB  (Time_FB>t_start)),  vWindow,nOverlap,nFFT,Fs);
-    [S_RotSpeed_FBFF_est(iSample,:),~]      = pwelch(detrend(RotSpeed_FBFF(Time_FBFF>t_start)),vWindow,nOverlap,nFFT,Fs);
-    [S_PtfmPitch_FB_est(iSample,:),f_est]	= pwelch(detrend(PtfmPitch_FB  (Time_FB>t_start)),  vWindow,nOverlap,nFFT,Fs);
-    [S_PtfmPitch_FBFF_est(iSample,:),~]     = pwelch(detrend(PtfmPitch_FBFF(Time_FBFF>t_start)),vWindow,nOverlap,nFFT,Fs);
+    [S_RotSpeed_FB_est(iSample,:),f_est]	= pwelch(detrend(FB_Data.RotSpeed  (FB_Data.Time>t_start)),  vWindow,nOverlap,nFFT,Fs);
+    [S_RotSpeed_FBFF_est(iSample,:),~]      = pwelch(detrend(FBFF_Data.RotSpeed(FBFF_Data.Time>t_start)),vWindow,nOverlap,nFFT,Fs);
+    [S_PtfmPitch_FB_est(iSample,:),f_est]	= pwelch(detrend(FB_Data.PtfmPitch  (FB_Data.Time>t_start)),  vWindow,nOverlap,nFFT,Fs);
+    [S_PtfmPitch_FBFF_est(iSample,:),~]     = pwelch(detrend(FBFF_Data.PtfmPitch(FBFF_Data.Time>t_start)),vWindow,nOverlap,nFFT,Fs);
     
     
     
     % Calculate standard deviation
-    STD_RotSpeed_FB  (iSample)              = std(RotSpeed_FB   (Time_FB>t_start));
-    STD_RotSpeed_FBFF(iSample)              = std(RotSpeed_FBFF (Time_FB>t_start));
-    STD_PtfmPitch_FB  (iSample)             = std(PtfmPitch_FB   (Time_FB>t_start));
-    STD_PtfmPitch_FBFF(iSample)             = std(PtfmPitch_FBFF (Time_FB>t_start));
-    STD_TwrBsMyt_FB  (iSample)             = std(TwrBsMyt_FB   (Time_FB>t_start));
-    STD_TwrBsMyt_FBFF(iSample)             = std(TwrBsMyt_FBFF (Time_FB>t_start));
+    STD_RotSpeed_FB  (iSample)              = std(FB_Data.RotSpeed   (FB_Data.Time>t_start));
+    STD_RotSpeed_FBFF(iSample)              = std(FBFF_Data.RotSpeed (FBFF_Data.Time>t_start));
+    STD_PtfmPitch_FB  (iSample)             = std(FB_Data.PtfmPitch  (FB_Data.Time>t_start));
+    STD_PtfmPitch_FBFF(iSample)             = std(FBFF_Data.PtfmPitch(FBFF_Data.Time>t_start));
+    STD_TwrBsMyt_FB  (iSample)              = std(FB_Data.TwrBsMyt   (FB_Data.Time>t_start));
+    STD_TwrBsMyt_FBFF(iSample)              = std(FBFF_Data.TwrBsMyt (FBFF_Data.Time>t_start));
     
 
 end
@@ -221,5 +221,8 @@ fprintf('Change in rotor speed standard deviation:  %4.1f %%\n',...
     (mean(STD_RotSpeed_FBFF)/mean(STD_RotSpeed_FB)-1)*100)       
 
 fprintf('Change in platform pitch standard deviation:  %4.1f %%\n',...
-    (mean(STD_PtfmPitch_FBFF)/mean(STD_PtfmPitch_FB)-1)*100)       
+    (mean(STD_PtfmPitch_FBFF)/mean(STD_PtfmPitch_FB)-1)*100)   
+
+fprintf('Change in tower base fore-aft bending moment standard deviation:  %4.1f %%\n',...
+    (mean(STD_TwrBsMyt_FBFF)/mean(STD_TwrBsMyt_FB)-1)*100)       
 

@@ -11,8 +11,8 @@
 % A new platform damper using the platform pitch rate is also activated.
 % This avoids the instablity of the FF without MC.
 % Result:       
-% Change in platform pitch amplitude (max-min) from FB to FBFF:   -58.9%
-% Change in platform pitch amplitude (max-min) from FB to FBFFMC:   -71.0%
+% Change in platform pitch amplitude (max-min) from FB to FBFF:   -72.5%
+% Change in platform pitch amplitude (max-min) from FB to FBFFMC:   -77.5%
 % Authors: 		
 % Feng Guo, David Schlipf, Frank Lemmer
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
