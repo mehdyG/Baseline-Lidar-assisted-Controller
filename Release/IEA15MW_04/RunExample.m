@@ -1,4 +1,5 @@
-% LAC Test IEA15MW_04:  IEA 15 MW UMaineSemi + Realistic wind preview
+% IEA15MW_04: IEA 15 MW floating + realistic wind preview  from a 
+% nacelle-based lidar system, single wind speed.
 % Purpose:
 % Here, we use a realistic wind preview to demonstrate that the collective
 % pitch feedforward controller together with the correct filtering provides
@@ -17,7 +18,7 @@ clearvars;
 close all;
 clc;
 addpath('..\MatlabFunctions')
-addpath('..\MatlabFunctions\AnalyticlModel')
+addpath('..\MatlabFunctions\AnalyticalModel')
 
 % Seeds (can be adjusted, but will provide different results)
 nSample             = 6;                        % [-]           number of stochastic turbulence field samples

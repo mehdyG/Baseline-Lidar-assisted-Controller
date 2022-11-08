@@ -1,6 +1,5 @@
-% LAC Test IEA15MW_05:  IEA 15 MW offshore reference model on UMaine 
-% VolturnUS-S semi-submersible floating platform with perfect wind preview 
-% from a single point lidar system
+% IEA15MW_05: IEA 15 MW floating + platform damper + perfect wind preview 
+% from a single point lidar system.
 % Origin and changes in files: see ChangeLog.txt.
 % Purpose:
 % Here, we use a perfect wind preview to demonstrate that the collective

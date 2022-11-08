@@ -4,7 +4,7 @@ A reference baseline lidar-assisted wind turbine controller for the wind energy 
 The code uses Bladed style interface, which is responsible for exchanging variables between the OpenFAST executable and the external controllers compiled as
 Dynamic Link Library(DLL).  The functions of each DLL is described below:
 
-DISCON.dll:  The master (wrapper) DLL.  It calls sub-DLLs by a specific sequence specified in the "DISCON.IN" input file.
+WRAPPER.dll: The master (wrapper) DLL.  It calls sub-DLLs by a specific sequence specified in the "WRAPPER.IN" input file.
 LDP.dll:     The LDP module reads in LOS measurements from lidar and estimates the rotor effective wind speed, which will eventually be written to the avrSWAP array.
 FFP.dll:     The FFP module reads in the rotor effective wind speed from the avrSWAP array, then filter the signal and shifts it in time.  It eventually returns the feed-forward pitch time derivative (rate), which is written into the avrSWAP array.     
 ROSCO.dll:   The ROSCO.  Version 2.6.0 controller, https://github.com/NREL/ROSCO  by NREL.  The pitch controller is modified to accept the pitch forward rate signal.
@@ -31,5 +31,17 @@ Visual Studio 2017 Community+Intel Fortran Compiler 2019(available here: https:/
 
 The pre-compiled DLLs in the "Release" folder are compiled using Visual Studio 2015 and Fortran compiler 2019.  If your system reports the error that the DLL file could not be found, installing Visual Studio 2015 or a newer version may solve the issue. 
 
+We added the following examples:
+IEA15MW_01: IEA 15 MW monopile + perfect wind preview from a single point lidar system.
+IEA15MW_02: IEA 15 MW floating + perfect wind preview from a single point lidar system.
+IEA15MW_03: IEA 15 MW monopile + realistic wind preview from a nacelle-based lidar system, single wind speed.
+IEA15MW_04: IEA 15 MW floating + realistic wind preview from a nacelle-based lidar system, single wind speed.
+IEA15MW_05: IEA 15 MW floating + platform damper + perfect wind preview from a single point lidar system.
+IEA15MW_06: IEA 15 MW floating + platform damper + realistic wind preview from a nacelle-based lidar system, single wind speed.
+IEA15MW_07: IEA 15 MW floating + realistic wind preview from a nacelle-based lidar system, single wind speed.
+IEA15MW_08: ???
+IEA15MW_09: IEA 15 MW monopile + realistic wind preview from a nacelle-based lidar system, full DLC 1.2.
+
 # For collaborators
 When you make new DLLs or modify one of the DLLs, and you want to push the source code, please only push the "CMakeLists.txt" file and the "src" folder containing all source codes.
+
