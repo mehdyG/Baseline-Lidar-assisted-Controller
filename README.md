@@ -31,16 +31,17 @@ Visual Studio 2017 Community+Intel Fortran Compiler 2019(available here: https:/
 
 The pre-compiled DLLs in the "Release" folder are compiled using Visual Studio 2015 and Fortran compiler 2019.  If your system reports the error that the DLL file could not be found, installing Visual Studio 2015 or a newer version may solve the issue. 
 
+# Examples
 We added the following examples:
-IEA15MW_01: IEA 15 MW monopile + perfect wind preview from a single point lidar system.
-IEA15MW_02: IEA 15 MW floating + perfect wind preview from a single point lidar system.
-IEA15MW_03: IEA 15 MW monopile + realistic wind preview from a nacelle-based lidar system, single wind speed.
-IEA15MW_04: IEA 15 MW floating + realistic wind preview from a nacelle-based lidar system, single wind speed.
-IEA15MW_05: IEA 15 MW floating + platform damper + perfect wind preview from a single point lidar system.
-IEA15MW_06: IEA 15 MW floating + platform damper + realistic wind preview from a nacelle-based lidar system, single wind speed.
-IEA15MW_07: IEA 15 MW floating + realistic wind preview from a nacelle-based lidar system, single wind speed.
-IEA15MW_08: ???
-IEA15MW_09: IEA 15 MW monopile + realistic wind preview from a nacelle-based lidar system, full DLC 1.2.
+- IEA15MW_01: IEA 15 MW monopile + perfect wind preview from a single point lidar system.
+- IEA15MW_02: IEA 15 MW floating + perfect wind preview from a single point lidar system.
+- IEA15MW_03: IEA 15 MW monopile + realistic wind preview from a nacelle-based lidar system, single wind speed.
+- IEA15MW_04: IEA 15 MW floating + realistic wind preview from a nacelle-based lidar system, single wind speed.
+- IEA15MW_05: IEA 15 MW floating + platform damper + perfect wind preview from a single point lidar system.
+- IEA15MW_06: IEA 15 MW floating + platform damper + realistic wind preview from a nacelle-based lidar system, single wind speed.
+- IEA15MW_07: IEA 15 MW floating + realistic wind preview from a nacelle-based lidar system, single wind speed.
+- IEA15MW_08: ???
+- IEA15MW_09: IEA 15 MW monopile + realistic wind preview from a nacelle-based lidar system, full DLC 1.2.
 
 # For collaborators
 When you make new DLLs or modify one of the DLLs, and you want to push the source code, please only push the "CMakeLists.txt" file and the "src" folder containing all source codes.
