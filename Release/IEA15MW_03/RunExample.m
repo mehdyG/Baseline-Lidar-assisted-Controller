@@ -78,7 +78,7 @@ for iSample = 1:nSample
     % Run FB    
     FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
     if ~exist(FASTresultFile,'file')    
-        ManipulateTXTFile('ROSCO_15MP.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
+        ManipulateTXTFile('ROSCO_v2d6.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
         dos([FASTexeFile,' ',SimulationName,'.fst']);
         movefile([SimulationName,'.outb'],FASTresultFile)
     end
@@ -86,7 +86,7 @@ for iSample = 1:nSample
     % Run FB+FF    
     FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
     if ~exist(FASTresultFile,'file')    
-        ManipulateTXTFile('ROSCO_15MP.IN','0 ! FlagLAC','1 ! FlagLAC'); % enable LAC
+        ManipulateTXTFile('ROSCO_v2d6.IN','0 ! FlagLAC','1 ! FlagLAC'); % enable LAC
         dos([FASTexeFile,' ',SimulationName,'.fst']);
         movefile([SimulationName,'.outb'],FASTresultFile)
     end    
@@ -139,10 +139,10 @@ theta_OP                 = 0.2714;
 Omega_OP                 = 0.7920;
 v_0_OP                   = 18;
 f_delay                  = 0.025;
-ROSCOInFileName          = 'ROSCO_15MP.IN';
+ROSCOInFileName          = 'ROSCO_v2d6.IN';
 RotorPerformanceFile     = 'Cp_Ct_Cq.IEA15MW.txt';
 LidarInputFileName       = 'MolasNL400_1G_LidarFile.dat';
-LDPInputFileName         = 'LDP_NL400.IN';
+LDPInputFileName         = 'LDP_v1.IN';
 SpectralModelFileName    = 'LidarRotorSpectra_IEA15MW_MolasNL400.mat';
 AnalyticalModel          = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP,f_delay,...
     ROSCOInFileName,RotorPerformanceFile,LidarInputFileName,LDPInputFileName,SpectralModelFileName);
