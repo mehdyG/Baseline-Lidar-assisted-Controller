@@ -34,7 +34,7 @@ ManipulateTXTFile(InflowFile,...
                     '4                      WindType',...
                     '1                      WindType');
 ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','120   TMax');
-ManipulateTXTFile('ROSCO_15MP.IN','1 ! FlagLAC','0 ! FlagLAC');
+ManipulateTXTFile('ROSCO_v2d6.IN','1 ! FlagLAC','0 ! FlagLAC');
 
 if AdjustSteadyStatesFlag
 	load(SteadyStateFile,'v_0','theta','Omega','x_T');
@@ -93,7 +93,7 @@ ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat',...
                     '1                      WindType',...
                     '4                      WindType');
 ManipulateTXTFile([SimulationName,'.fst'],'120   TMax','580   TMax');
-ManipulateTXTFile('ROSCO_15MP.IN','0 ! FlagLAC','1 ! FlagLAC');
+ManipulateTXTFile('ROSCO_v2d6.IN','0 ! FlagLAC','1 ! FlagLAC');
 
 % Clean up
 delete(FASTexeFile)
@@ -111,8 +111,8 @@ M_g             = NaN(1,n_HWindSpeed);
 % allocation of evaluation values
 STD_Omega       = NaN(1,n_HWindSpeed);
 STD_x_T         = NaN(1,n_HWindSpeed);
-RotSpeedCell    = cell{1,n_HWindSpeed};
-TTDspFACell     = cell{1,n_HWindSpeed};
+RotSpeedCell    = cell(1,n_HWindSpeed);
+TTDspFACell     = cell(1,n_HWindSpeed);
 
 % loop over all wind speeds
 for i_HWindSpeed = 1:n_HWindSpeed
