@@ -7,7 +7,8 @@
 % and the coherence. In this example, we assume frozen turbulence, only one 
 % 3D turbulence field (y,z,t) at rotor plane is generated.
 % Result:
-% Change in rotor speed standard deviation:  -19.6 %
+% Change in rotor speed standard deviation:   %
+% Change in DLC 1.2 :   %
 % Authors:
 % David Schlipf, Feng Guo
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -19,7 +20,8 @@ clc;
 addpath('..\MatlabFunctions')
 addpath('..\MatlabFunctions\AnalyticlModel')
 
-% Seeds (can be adjusted, but will provide different results)
+% Parameters (can be adjusted, but will provide different results)
+HWindSpeed_vec      = 3:.1:30;  % [m/s]         range of wind speeds (operation points)
 nSample             = 6;                        % [-]           number of stochastic turbulence field samples
 Seed_vec            = [1:nSample];              % [-]           vector of seeds
 
@@ -36,6 +38,11 @@ FASTexeFile         = 'openfast_x64.exe';
 FASTmapFile         = 'MAP_x64.dll';
 SimulationName      = 'IEA-15-240-RWT-Monopile';
 TurbSimTemplateFile = 'TurbSim2aInputFileTemplateIEA15MW.inp';
+SteadyStateFile     = 'SteadyStatesIEA15MW_Monopile_ROSCO_FAST.mat';
+EDFile              = 'IEA-15-240-RWT-Monopile_ElastoDyn.dat';
+InflowFile          = 'IEA-15-240-RWT_InflowFile.dat';
+ServoDynFile        = 'IEA-15-240-RWT-Monopile_ServoDyn.dat';
+LidarFile           = 'MolasNL400_1G_LidarFile.dat';
 if ~exist('TurbulentWind','dir')
     mkdir TurbulentWind
 end
@@ -43,11 +50,12 @@ if ~exist('SimulationResults','dir')
     mkdir SimulationResults
 end
 %% Preprocessing: generate turbulent wind field
-    
+
 % Copy the adequate TurbSim version to the example folder 
 copyfile(['..\TurbSim\',TurbSimExeFile],['TurbulentWind\',TurbSimExeFile])
     
 % Generate all wind fields
+
 for iSample = 1:nSample        
     Seed                = Seed_vec(iSample);
     TurbSimInputFile  	= ['TurbulentWind\URef_18_Seed_',num2str(Seed,'%02d'),'.ipt'];
