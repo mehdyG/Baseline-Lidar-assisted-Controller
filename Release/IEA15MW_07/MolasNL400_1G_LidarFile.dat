@@ -22,10 +22,10 @@ X-Tab 	Y-Tab 	Z-Tab
 ---------------------- Measuring points in spherical coordinates----------------
 4		NumberOfPoints_Spherical		- Amounts of Points
 Azimuth-Tab     Elevation-Tab	RangeGates-Tab
- +15.0 	  +12.09 	   254.10	 
- +15.0 	  -12.09 	   254.10	 
- -15.0 	  -12.09 	   254.10	 
- -15.0 	  +12.09 	   254.10  	 
+ +15.0 	  +12.09 	   179.99	 
+ +15.0 	  -12.09 	   179.99	 
+ -15.0 	  -12.09 	   179.99	 
+ -15.0 	  +12.09 	   179.99  	 
 ---------------------- Weighting function (gaussian distribution)---------------
 30		FWHM							- Full width half maximum [m]
 3		PointsToEvaluate				- points evaluated to "integrate" (odd number so there is a point in the peak, >= 3) [-]

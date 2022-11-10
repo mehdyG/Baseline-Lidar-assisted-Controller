@@ -21,9 +21,8 @@ function AnalyticalModel = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP
 % 2. S_LL: Spectrum for lidar estimated rotor effective wind speed
 % 3. S_RL: Cross-spectrum between rotor effective wind speed and its lidar estimation
 % 4. f:    Frequency vector
-load(SpectralModelFileName,'S_RL','S_LL','S_RR','f');
 
-
+load(SpectralModelFileName, 'S_LL', 'S_RL', 'S_RR', 'f'); % dimensions of all variables should be N*1
 
 % Get some parameters from Rosco
 Parameter.General.rho           = GetParametersFromText(ROSCOInFileName,'WE_RhoAir');       % [kg/m^3]  air density
@@ -82,22 +81,22 @@ CL_FB                   = connect(WT_1DOF,PA,FB,LP,TC,Sum_FB,{'v_0'},{'Omega_g',
 % Define first Order LPF
 
 G_RL                    = abs(S_RL)./S_LL;
-w_cutoff                = interp1(G_RL,f,db2mag(-3),'linear')*2*pi;
+w_cutoff                = interp1(abs(G_RL),f,db2mag(-3),'linear')*2*pi;
 LP_FF                   = ss(-w_cutoff,w_cutoff,1,0);                      
 LP_FF.InputName         = {'v_0L'};
 LP_FF.OutputName        = {'v_0Lf'};  
 [~,phase_LP_FF,~]      	= bode(LP_FF,f*2*pi);
-TimeDelay               = squeeze(-phase_LP_FF)./360./f';
+TimeDelay               = squeeze(-phase_LP_FF)./360./f;
 
 % Get a time delay for the interested frequency f_delay, it is the frequency where rotor speed fluctuates the most
 T_filter                = interp1(f,TimeDelay,f_delay,'linear');  
 Azimuth                 = GetParametersFromText(LDPInputFileName,'Lidar_Azimuth');
 Elevation               = GetParametersFromText(LDPInputFileName,'Lidar_Elevation');
-RangeGate               = 254; %GetParametersFromText(LidarInputFileName,'Lidar_RangeGates');
+RangeGate               = GetParametersFromText(LDPInputFileName,'Lidar_RangeGates');% radial direction
 x_lead                  = RangeGate(1)*cosd(Azimuth(1))*cosd(Elevation(1));
 T_lead                  = x_lead/v_0_OP;                                         
 [~,phase_PA,~]          = bode(PA,f*2*pi);
-T_pitch_over_f          = squeeze(-phase_PA)./360./f';    
+T_pitch_over_f          = squeeze(-phase_PA)./360./f;    
 T_pitch                 = interp1(f,T_pitch_over_f,f_delay,'linear');   
 Num_LidarBeam           = GetParametersFromText(LDPInputFileName,'NumberOfBeams'); % number of lidar beam
 t_measurement_interval  = GetParametersFromText(LidarInputFileName,'t_measurement_interval'); % time required to finish measurement at one beam
@@ -117,7 +116,7 @@ CL_FBFF                 = connect(WT_1DOF,PA,FB,FF,LP,LP_FF,TC,Sum_FBFF,{'v_0','
 [MAG,~]                 = bode(CL_FB,2*pi*f); 
 
 % cross spectrum between the rotor and the buffered lidar estimate
-S_RL_buffered           = S_RL.*exp(-1i*2*pi.*f'*T_buffer); 
+S_RL_buffered           = S_RL.*exp(-1i*2*pi.*f*T_buffer); 
 
 % frequency domain response of FBFF control
 % calculate analytic spectra of rotor speed with FB+FF control
@@ -132,6 +131,8 @@ S_Omega_r_FF           =  G_OmegaR_FBFF.*conj(G_OmegaR_FBFF).*S_RR              
 AnalyticalModel.S_Omega_r_FB            = squeeze(MAG(2,:,:)).^2.*S_RR;
 AnalyticalModel.S_Omega_r_FF            = S_Omega_r_FF;
 AnalyticalModel.f                       = f;
-
+AnalyticalModel.f_cutoff                = w_cutoff; % Corner frequency (-3dB) of the low-pass filter [rad/s]
+AnalyticalModel.T_buffer                = T_buffer; % Buffer time for filtered REWS signal [s] 
+AnalyticalModel.G_RL                    = G_RL;
 end
 
