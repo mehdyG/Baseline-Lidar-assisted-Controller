@@ -14,3 +14,6 @@ Release/IEA15MW_04/fixed.mat
 Release/MatlabFunctions/AnalyticlModel/AnalyticalRotorSpeedSpectrum_v2.m
 Release/IEA15MW_05/IEA15MW_05.pdf
 ROSCO/build
+Release/IEA15MW_SpinnerMountedtest/ChangeLog.txt
+Release/IEA15MW_SpinnerMountedtest/Wind/UniformShearedSteady_URef_18.wnd
+Release/IEA15MW_SpinnerMountedtest/Wind/UniformShearedSteady_URef_18.sum
