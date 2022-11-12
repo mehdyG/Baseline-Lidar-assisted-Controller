@@ -91,8 +91,8 @@ copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 % Simulate with all wind fields
 ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','3630   TMax');  % [s]           Set simulation length Based on David's PHD thesis
 
-n_HWindSpeed     	= length (HWindSpeed_vec);
 for i_HWindSpeed    = 1:n_HWindSpeed
+    HWindSpeed      = HWindSpeed_vec(i_HWindSpeed);
 
     % Set initial values
     MyBlPitch   = num2str(rad2deg  (interp1(v_0,theta,HWindSpeed)),'%5.2f');
@@ -151,36 +151,44 @@ ManipulateTXTFile([SimulationName,'.fst'],'3630   TMax','580   TMax');
 
 %% Postprocessing: evaluate data
 
-for iSample = 1:nSample    
+for i_HWindSpeed    = 1:n_HWindSpeed
 
-    % Load data
-    Seed                = Seed_vec(iSample);
-    
-    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
-    FB                  = ReadFASTbinaryIntoStruct(FASTresultFile);
-    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
-    FBFF                = ReadFASTbinaryIntoStruct(FASTresultFile);
+    HWindSpeed      = HWindSpeed_vec(i_HWindSpeed);
 
-    % Plot time results
-    figure('Name',['Seed ',num2str(Seed)])
-    hold on; grid on; box on
-    plot(FB.Time,       FB.RotSpeed);
-    plot(FBFF.Time,     FBFF.RotSpeed);
-    ylabel('RotSpeed [rpm]');
-    legend('feedback only','feedback-feedforward')
-    xlabel('time [s]')
+    for iSample = 1:nSample
 
-    % Estimate spectra
-    Fs                                      = 80; % [Hz]  sampling frequenzy, same as in *.fst
-    [S_RotSpeed_FB_est(iSample,:),f_est]	= pwelch(detrend(FB.RotSpeed  (FB.Time  >t_start)),vWindow,nOverlap,nFFT,Fs);
-    [S_RotSpeed_FBFF_est(iSample,:),~]      = pwelch(detrend(FBFF.RotSpeed(FBFF.Time>t_start)),vWindow,nOverlap,nFFT,Fs);
+        % Load data
+        Seed                = Seed_vec(iSample);
 
-    % Calculate standard deviation
-    STD_RotSpeed_FB  (iSample)              = std(FB.RotSpeed  (FB.Time  >t_start));
-    STD_RotSpeed_FBFF(iSample)              = std(FBFF.RotSpeed(FBFF.Time>t_start));
+        FASTresultFile      = ['SimulationResults\URef_',num2str(HWindSpeed,'%4.1d'),...
+                                    '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
+        FB                  = ReadFASTbinaryIntoStruct(FASTresultFile);
+        FASTresultFile      = ['SimulationResults\URef_',num2str(HWindSpeed,'%4.1d'),...
+                                    '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
+        FBFF                = ReadFASTbinaryIntoStruct(FASTresultFile);
+
+        % Plot time results
+        figure('Name',['URef ',num2str(HWindSpeed,'%4.1d'),...
+                                    'Seed ',num2str(Seed)])
+        hold on; grid on; box on
+        plot(FB.Time,       FB.RotSpeed);
+        plot(FBFF.Time,     FBFF.RotSpeed);
+        ylabel('RotSpeed [rpm]');
+        legend('feedback only','feedback-feedforward')
+        xlabel('time [s]')
+
+        % Estimate spectra
+        Fs                                      = 80; % [Hz]  sampling frequenzy, same as in *.fst
+        [S_RotSpeed_FB_est(i_HWindSpeed,iSample,:),f_est]	= pwelch(detrend(FB.RotSpeed  (FB.Time  >t_start)),vWindow,nOverlap,nFFT,Fs);
+        [S_RotSpeed_FBFF_est(i_HWindSpeed,iSample,:),~]      = pwelch(detrend(FBFF.RotSpeed(FBFF.Time>t_start)),vWindow,nOverlap,nFFT,Fs);
+
+        % Calculate standard deviation
+        STD_RotSpeed_FB  (i_HWindSpeed,iSample)              = std(FB.RotSpeed  (FB.Time  >t_start));
+        STD_RotSpeed_FBFF(i_HWindSpeed,iSample)              = std(FBFF.RotSpeed(FBFF.Time>t_start));
+
+    end
 
 end
-
 %% Calculate rotor speed spectra by analytical model
 
 % steady state operating point for 
