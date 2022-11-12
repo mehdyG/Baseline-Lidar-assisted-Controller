@@ -21,9 +21,9 @@ addpath('..\MatlabFunctions')
 addpath('..\MatlabFunctions\AnalyticlModel')
 
 % Parameters (can be adjusted, but will provide different results)
-HWindSpeed_vec      = 3:.1:30;  % [m/s]         range of wind speeds (operation points)
-nSample             = 6;                        % [-]           number of stochastic turbulence field samples
-Seed_vec            = [1:nSample];              % [-]           vector of seeds
+HWindSpeed_vec      = 3:2:30;                                           % [m/s]         range of wind speeds (operation points)
+nSample             = 6;                                                % [-]           number of stochastic turbulence field samples
+Seed_vec            = [1:nSample];                                      % [-]           vector of seeds
 
 % Parameters postprocessing (can be adjusted, but will provide different results)
 t_start             = 10;                       % [-]           ignore data before for STD and spectra
@@ -41,8 +41,9 @@ TurbSimTemplateFile = 'TurbSim2aInputFileTemplateIEA15MW.inp';
 SteadyStateFile     = 'SteadyStatesIEA15MW_Monopile_ROSCO_FAST.mat';
 EDFile              = 'IEA-15-240-RWT-Monopile_ElastoDyn.dat';
 InflowFile          = 'IEA-15-240-RWT_InflowFile.dat';
-ServoDynFile        = 'IEA-15-240-RWT-Monopile_ServoDyn.dat';
+SDFile              = 'IEA-15-240-RWT-Monopile_ServoDyn.dat';
 LidarFile           = 'MolasNL400_1G_LidarFile.dat';
+
 if ~exist('TurbulentWind','dir')
     mkdir TurbulentWind
 end
@@ -54,21 +55,32 @@ end
 % Copy the adequate TurbSim version to the example folder 
 copyfile(['..\TurbSim\',TurbSimExeFile],['TurbulentWind\',TurbSimExeFile])
     
-% Generate all wind fields
+% Generate all wind fields for Different HWindSpeed and seeds
 
-for iSample = 1:nSample        
-    Seed                = Seed_vec(iSample);
-    TurbSimInputFile  	= ['TurbulentWind\URef_18_Seed_',num2str(Seed,'%02d'),'.ipt'];
-    TurbSimResultFile  	= ['TurbulentWind\URef_18_Seed_',num2str(Seed,'%02d'),'.wnd'];
-    if ~exist(TurbSimResultFile,'file')
-        copyfile([TurbSimTemplateFile],TurbSimInputFile)
-        ManipulateTXTFile(TurbSimInputFile,'MyRandSeed1',num2str(Seed));% adjust seed
-        dos(['TurbulentWind\',TurbSimExeFile,' ',TurbSimInputFile]);
+n_HWindSpeed     	= length (HWindSpeed_vec);
+for i_HWindSpeed    = 1:n_HWindSpeed
+
+    % Adjust the TurbSim input file
+    HWindSpeed      = HWindSpeed_vec(i_HWindSpeed);
+
+    for iSample = 1:nSample
+        Seed                = Seed_vec(iSample);
+        TurbSimInputFile  	= ['TurbulentWind\URef_',num2str(HWindSpeed,'%4.1d'),'_Seed_',num2str(Seed,'%02d'),'.ipt'];
+        TurbSimResultFile  	= ['TurbulentWind\URef_',num2str(HWindSpeed,'%4.1d'),'_Seed_',num2str(Seed,'%02d'),'.wnd'];
+        if ~exist(TurbSimResultFile,'file')
+            copyfile([TurbSimTemplateFile],TurbSimInputFile)
+            ManipulateTXTFile(TurbSimInputFile,'MyHWindSpeed',num2str(HWindSpeed,'%4.1d'));  % adjust HWindSpeed to creat turbulent wind field
+            ManipulateTXTFile(TurbSimInputFile,'MyRandSeed1',num2str(Seed));% adjust seed
+            dos(['TurbulentWind\',TurbSimExeFile,' ',TurbSimInputFile]);
+        end
     end
+
 end
-    
+
 % Clean up
 delete(['TurbulentWind\',TurbSimExeFile])
+
+load(SteadyStateFile,'v_0','theta','Omega','x_T','M_g','Info'); % Load Initials
 
 %% Processing: run simulations
 
@@ -77,37 +89,65 @@ copyfile(['..\OpenFAST\',FASTexeFile],FASTexeFile)
 copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 
 % Simulate with all wind fields
-for iSample = 1:nSample
-    
-    % Adjust the InflowWind file
-    Seed                = Seed_vec(iSample);
-    WindFileRoot        = ['TurbulentWind\URef_18_Seed_',num2str(Seed,'%02d')];
-    ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
-    
-    % Run FB    
-    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
-    if ~exist(FASTresultFile,'file')    
-        ManipulateTXTFile('ROSCO_v2d6.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
-        dos([FASTexeFile,' ',SimulationName,'.fst']);
-        movefile([SimulationName,'.outb'],FASTresultFile)
-    end
-   
-    % Run FB+FF    
-    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
-    if ~exist(FASTresultFile,'file')    
-        ManipulateTXTFile('ROSCO_v2d6.IN','0 ! FlagLAC','1 ! FlagLAC'); % enable LAC
-        dos([FASTexeFile,' ',SimulationName,'.fst']);
-        movefile([SimulationName,'.outb'],FASTresultFile)
-    end    
-    
-    % Reset the InflowWind file again
-    ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
-end
+ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','3630   TMax');  % [s]           Set simulation length Based on David's PHD thesis
 
+n_HWindSpeed     	= length (HWindSpeed_vec);
+for i_HWindSpeed    = 1:n_HWindSpeed
+
+    % Set initial values
+    MyBlPitch   = num2str(rad2deg  (interp1(v_0,theta,HWindSpeed)),'%5.2f');
+    MyRotSpeed  = num2str(radPs2rpm(interp1(v_0,Omega,HWindSpeed)),'%5.2f');
+    MyTTDspFA   = num2str(         (interp1(v_0,x_T  ,HWindSpeed)),'%5.2f');
+    MyM_g       = num2str(         (interp1(v_0,M_g  ,HWindSpeed)),'%5.2f');
+
+    ManipulateTXTFile(EDFile,'MyBlPitch',   MyBlPitch);
+    ManipulateTXTFile(EDFile,'MyRotSpeed',  MyRotSpeed);
+    ManipulateTXTFile(EDFile,'MyTTDspFA',   MyTTDspFA); 
+    ManipulateTXTFile(SDFile,'MyM_g',       MyM_g);
+
+    for iSample = 1:nSample
+
+        % Adjust the InflowWind file
+        Seed                = Seed_vec(iSample);
+        WindFileRoot        = ['TurbulentWind\URef_',num2str(HWindSpeed,'%4.1d'),'_Seed_',num2str(Seed,'%02d')];
+        ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
+
+        % Run FB
+        FASTresultFile      = ['SimulationResults\URef_',num2str(HWindSpeed,'%4.1d'),...
+                                    '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
+        if ~exist(FASTresultFile,'file')
+            ManipulateTXTFile('ROSCO_v2d6.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
+            dos([FASTexeFile,' ',SimulationName,'.fst']);
+            movefile([SimulationName,'.outb'],FASTresultFile)
+        end
+
+        % Run FB+FF
+        FASTresultFile      = ['SimulationResults\URef_',num2str(HWindSpeed,'%4.1d'),...
+                                    '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
+        if ~exist(FASTresultFile,'file')
+            ManipulateTXTFile('ROSCO_v2d6.IN','0 ! FlagLAC','1 ! FlagLAC'); % enable LAC
+            dos([FASTexeFile,' ',SimulationName,'.fst']);
+            movefile([SimulationName,'.outb'],FASTresultFile)
+        end
+
+        % Reset the InflowWind file again
+        ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
+    end
+
+    % Reset the ElastoDyn and ServoDyn file again
+    ManipulateTXTFile(EDFile,MyBlPitch, 'MyBlPitch');
+    ManipulateTXTFile(EDFile,MyRotSpeed,'MyRotSpeed');
+    ManipulateTXTFile(EDFile,MyTTDspFA, 'MyTTDspFA');
+    ManipulateTXTFile(SDFile,MyM_g,     'MyM_g');
+
+end
 
 % Clean up
 delete(FASTexeFile)
 delete(FASTmapFile)
+
+% Reset simulation length 
+ManipulateTXTFile([SimulationName,'.fst'],'3630   TMax','580   TMax');  
 
 %% Postprocessing: evaluate data
 

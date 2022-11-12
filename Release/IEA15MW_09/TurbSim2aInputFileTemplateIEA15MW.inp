@@ -37,7 +37,7 @@ default   ETMc            - IEC Extreme Turbulence Model "c" parameter [m/s]
 default   WindProfileType - Velocity profile type ("LOG";"PL"=power law;"JET";"H2L"=Log law for TIDAL model;"API";"USR";"TS";"IEC"=PL on rotor disk, LOG elsewhere; or "default")
 "unused"  ProfileFile     - Name of the file that contains input profiles for WindProfileType="USR" and/or TurbModel="USRVKM" [-]
 150        RefHt           - Height of the reference velocity (URef) [m]
-18        URef            - Mean (total) velocity at the reference height [m/s] (or "default" for JET velocity profile) [must be 1-hr mean for API model; otherwise is the mean over AnalysisTime seconds]
+MyHWindSpeed        URef            - Mean (total) velocity at the reference height [m/s] (or "default" for JET velocity profile) [must be 1-hr mean for API model; otherwise is the mean over AnalysisTime seconds]
 default   ZJetMax         - Jet height [m] (used only for JET velocity profile, valid 70-490 m)
 0.14   PLExp           - Power law exponent [-] (or "default")
 default   Z0              - Surface roughness length [m] (or "default")
