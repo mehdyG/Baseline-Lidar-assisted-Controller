@@ -189,36 +189,37 @@ for i_HWindSpeed    = 1:n_HWindSpeed
     end
 
 end
-%% Calculate rotor speed spectra by analytical model
+% %% Calculate rotor speed spectra by analytical model
+% 
+% % steady state operating point for 
+% theta_OP                 = 0.2714;
+% Omega_OP                 = 0.7920;
+% v_0_OP                   = 18;
+% f_delay                  = 0.025;
+% ROSCOInFileName          = 'ROSCO_v2d6.IN';
+% RotorPerformanceFile     = 'Cp_Ct_Cq.IEA15MW.txt';
+% LidarInputFileName       = 'MolasNL400_1G_LidarFile.dat';
+% LDPInputFileName         = 'LDP_v1.IN';
+% SpectralModelFileName    = 'LidarRotorSpectra_IEA15MW_MolasNL400.mat';
+% AnalyticalModel          = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP,f_delay,...
+%     ROSCOInFileName,RotorPerformanceFile,LidarInputFileName,LDPInputFileName,SpectralModelFileName);
+% 
+% %% Plot spectra
+% figure('Name','Simulation results')
+% 
+% hold on; grid on; box on
+% p1 = plot(AnalyticalModel.f,AnalyticalModel.S_Omega_r_FB.*(radPs2rpm(1))^2,'--','Color',[0 0.4470 0.7410]);
+% p2 = plot(AnalyticalModel.f,AnalyticalModel.S_Omega_r_FF.*(radPs2rpm(1))^2,'--','Color',[0.8500 0.3250 0.0980]);
+% p3 = plot(f_est ,mean(S_RotSpeed_FB_est,1),'-','Color',[0 0.4470 0.7410]);
+% p4 = plot(f_est ,mean(S_RotSpeed_FBFF_est,1),'-','Color',[0.8500 0.3250 0.0980]);
+% 
+% set(gca,'Xscale','log')
+% set(gca,'Yscale','log')
+% xlabel('frequency [Hz] ')
+% ylabel('Spectra RotSpeed [(rpm)^2Hz^{-1}]')
+% legend([p1 p2 p3 p4],'FB-only Analytical','FBFF Analytical','FB-only Estimated','FBFF Estimated')
+% 
+% % display results
+% fprintf('Change in rotor speed standard deviation:  %4.1f %%\n',...
+%     (mean(STD_RotSpeed_FBFF)/mean(STD_RotSpeed_FB)-1)*100)   
 
-% steady state operating point for 
-theta_OP                 = 0.2714;
-Omega_OP                 = 0.7920;
-v_0_OP                   = 18;
-f_delay                  = 0.025;
-ROSCOInFileName          = 'ROSCO_v2d6.IN';
-RotorPerformanceFile     = 'Cp_Ct_Cq.IEA15MW.txt';
-LidarInputFileName       = 'MolasNL400_1G_LidarFile.dat';
-LDPInputFileName         = 'LDP_v1.IN';
-SpectralModelFileName    = 'LidarRotorSpectra_IEA15MW_MolasNL400.mat';
-AnalyticalModel          = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP,f_delay,...
-    ROSCOInFileName,RotorPerformanceFile,LidarInputFileName,LDPInputFileName,SpectralModelFileName);
-
-%% Plot spectra
-figure('Name','Simulation results')
-
-hold on; grid on; box on
-p1 = plot(AnalyticalModel.f,AnalyticalModel.S_Omega_r_FB.*(radPs2rpm(1))^2,'--','Color',[0 0.4470 0.7410]);
-p2 = plot(AnalyticalModel.f,AnalyticalModel.S_Omega_r_FF.*(radPs2rpm(1))^2,'--','Color',[0.8500 0.3250 0.0980]);
-p3 = plot(f_est ,mean(S_RotSpeed_FB_est,1),'-','Color',[0 0.4470 0.7410]);
-p4 = plot(f_est ,mean(S_RotSpeed_FBFF_est,1),'-','Color',[0.8500 0.3250 0.0980]);
-
-set(gca,'Xscale','log')
-set(gca,'Yscale','log')
-xlabel('frequency [Hz] ')
-ylabel('Spectra RotSpeed [(rpm)^2Hz^{-1}]')
-legend([p1 p2 p3 p4],'FB-only Analytical','FBFF Analytical','FB-only Estimated','FBFF Estimated')
-
-% display results
-fprintf('Change in rotor speed standard deviation:  %4.1f %%\n',...
-    (mean(STD_RotSpeed_FBFF)/mean(STD_RotSpeed_FB)-1)*100)       
