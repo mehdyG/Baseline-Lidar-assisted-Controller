@@ -108,12 +108,12 @@ for i_HWindSpeed    = 1:n_HWindSpeed
     MyBlPitch   = num2str(rad2deg  (interp1(v_0,theta,HWindSpeed)),'%5.2f');
     MyRotSpeed  = num2str(radPs2rpm(interp1(v_0,Omega,HWindSpeed)),'%5.2f');
     MyTTDspFA   = num2str(         (interp1(v_0,x_T  ,HWindSpeed)),'%5.2f');
-    MyM_g       = num2str(         (interp1(v_0,M_g  ,HWindSpeed)),'%5.2f');
+    MyInitGenTrq= num2str(         (interp1(v_0,M_g  ,HWindSpeed)),'%5.2f');
 
     ManipulateTXTFile(EDFile,'MyBlPitch',   MyBlPitch);
     ManipulateTXTFile(EDFile,'MyRotSpeed',  MyRotSpeed);
     ManipulateTXTFile(EDFile,'MyTTDspFA',   MyTTDspFA);
-    ManipulateTXTFile(SDFile,'MyM_g',       MyM_g);
+    ManipulateTXTFile(SDFile,'MyInitGenTrq',MyInitGenTrq);
 
     for iSample = 1:nSample
 
@@ -146,10 +146,10 @@ for i_HWindSpeed    = 1:n_HWindSpeed
     end
 
     % Reset the ElastoDyn and ServoDyn file again
-    ManipulateTXTFile(EDFile,MyBlPitch, 'MyBlPitch');
-    ManipulateTXTFile(EDFile,MyRotSpeed,'MyRotSpeed');
-    ManipulateTXTFile(EDFile,MyTTDspFA, 'MyTTDspFA');
-    ManipulateTXTFile(SDFile,MyM_g,     'MyM_g');
+    ManipulateTXTFile(EDFile,MyBlPitch,     'MyBlPitch');
+    ManipulateTXTFile(EDFile,MyRotSpeed,    'MyRotSpeed');
+    ManipulateTXTFile(EDFile,MyTTDspFA,     'MyTTDspFA');
+    ManipulateTXTFile(SDFile,MyInitGenTrq,  'MyInitGenTrq');
 
 end
 
@@ -160,7 +160,20 @@ delete(FASTmapFile)
 % Reset .fst file
 ManipulateTXTFile([SimulationName,'.fst'],'60   TMax','580   TMax');  
 
-%% Postprocessing: evaluate data
+%% Postprocessing: Calculate DEL and P_mean
+
+% allocation Results Vectors
+P_SeedMean_FB               = NaN(1,nSample);
+P_SeedMean_FBFF             = NaN(1,nSample);
+STD_RotSpeed_FB             = NaN(1,nSample);
+STD_RotSpeed_FBFF           = NaN(1,nSample);
+
+DEL_MyT_FB                  = NaN(1,n_HWindSpeed);
+DEL_MyT_FBFF                = NaN(1,n_HWindSpeed);
+P_mean_FB                   = NaN(1,n_HWindSpeed);
+P_mean_FBFF                 = NaN(1,n_HWindSpeed);
+STD_RotSpeed_SeedMean_FB    = NaN(1,n_HWindSpeed);
+STD_RotSpeed_SeedMean_FBFF  = NaN(1,n_HWindSpeed);
 
 for i_HWindSpeed    = 1:n_HWindSpeed
 
@@ -173,7 +186,6 @@ for i_HWindSpeed    = 1:n_HWindSpeed
         FASTresultFile      = ['SimulationResults\HWindSpeed_',num2str(HWindSpeed,'%02d'),...
                                     '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
         FB                  = ReadFASTbinaryIntoStruct(FASTresultFile);
-
         if HWindSpeed > V_rated
             FASTresultFile  = ['SimulationResults\HWindSpeed_',num2str(HWindSpeed,'%02d'),...
                 '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
@@ -181,11 +193,9 @@ for i_HWindSpeed    = 1:n_HWindSpeed
         else
             FBFF            = FB;
         end
-
-        P_Seedmean_FB(iSample)      = mean(FB.GenPwr(FB.Time  >t_start));
+        P_SeedMean_FB(iSample)      = mean(FB.GenPwr(FB.Time  >t_start));
         MyT_FB(:,iSample)           = FB.TwrBsMyt(FB.Time  >t_start);
-
-        P_Seedmean_FBFF(iSample)    = mean(FBFF.GenPwr(FB.Time  >t_start));
+        P_SeedMean_FBFF(iSample)    = mean(FBFF.GenPwr(FB.Time  >t_start));
         MyT_FBFF(:,iSample)         = FBFF.TwrBsMyt(FB.Time  >t_start);
 
         % Calculate standard deviation
@@ -194,27 +204,27 @@ for i_HWindSpeed    = 1:n_HWindSpeed
 
     end
 
-    MyT_FB_SeedAve              = mean (MyT_FB,2);  % Average of MyT time seiries over all seed results, the result will be a time series to calculate DEL
-    MyT_FBFF_SeedAve            = mean (MyT_FBFF,2);% ...
+    MyT_FB_SeedMean              = mean (MyT_FB,2);  % Average of MyT time seiries over all seed results, the result will be a time series to calculate DEL
+    MyT_FBFF_SeedMean            = mean (MyT_FBFF,2);% ...
 
     % DEL calculation, Could be a function
-    RainF_FB                    = rainflow(MyT_FB_SeedAve);
+    RainF_FB                    = rainflow(MyT_FB_SeedMean);
     Count_FB                    = RainF_FB(:,1);
     Range_FB                    = RainF_FB(:,2);
     DEL_MyT_FB(i_HWindSpeed)    = (sum(Range_FB.^WoehlerExponent.*Count_FB)/N_REF).^(1/WoehlerExponent);
 
-    RainF_FBFF                  = rainflow(MyT_FBFF_SeedAve);
+    RainF_FBFF                  = rainflow(MyT_FBFF_SeedMean);
     Count_FBFF                  = RainF_FBFF(:,1);
     Range_FBFF                  = RainF_FBFF(:,2);
     DEL_MyT_FBFF(i_HWindSpeed)  = (sum(Range_FBFF.^WoehlerExponent.*Count_FBFF)/N_REF).^(1/WoehlerExponent);
 
     % Mean Power calculation
-    P_mean_FB(i_HWindSpeed)     = mean(P_Seedmean_FB);
-    P_mean_FBFF(i_HWindSpeed)   = mean(P_Seedmean_FBFF);
+    P_mean_FB(i_HWindSpeed)     = mean(P_SeedMean_FB);
+    P_mean_FBFF(i_HWindSpeed)   = mean(P_SeedMean_FBFF);
 
     %Standard Deviation calculation 
-    STD_RotSpeed_FB_seedAve  (i_HWindSpeed) = mean(STD_RotSpeed_FB);
-    STD_RotSpeed_FBFF_seedAve(i_HWindSpeed) = mean(TD_RotSpeed_FBFF);
+    STD_RotSpeed_SeedMean_FB  (i_HWindSpeed) = mean(STD_RotSpeed_FB);
+    STD_RotSpeed_SeedMean_FBFF(i_HWindSpeed) = mean(STD_RotSpeed_FBFF);
 
 end
 
@@ -237,8 +247,8 @@ fprintf('Change in DEL:  %4.1f %%\n',...
 % Plot STD Rotor Speed
 figure('Name','Rotor Speed STD mean Value')
 hold on; grid on; box on
-plot(HWindSpeed_vec,       STD_RotSpeed_FB_seedAve);
-plot(HWindSpeed_vec,     STD_RotSpeed_FBFF_seedAve);
+plot(HWindSpeed_vec,       STD_RotSpeed_SeedMean_FB);
+plot(HWindSpeed_vec,     STD_RotSpeed_SeedMean_FBFF);
 ylabel('STD [rpm]');
 legend('feedback only','feedback-feedforward')
 xlabel('Mean Wind Speed [m/s]')
