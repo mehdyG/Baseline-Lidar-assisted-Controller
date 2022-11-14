@@ -187,19 +187,9 @@ for i_HWindSpeed    = 1:n_HWindSpeed
         P_Seedmean_FBFF(iSample)    = mean(FBFF.GenPwr(FB.Time  >t_start));
         MyT_FBFF(:,iSample)         = FBFF.TwrBsMyt(FB.Time  >t_start);
 
-        % Plot time results
-        figure('Name',['URef ',num2str(HWindSpeed,'%4.1d'),...
-                                    'Seed ',num2str(Seed)])
-        hold on; grid on; box on
-        plot(FB.Time,       FB.RotSpeed);
-        plot(FBFF.Time,     FBFF.RotSpeed);
-        ylabel('RotSpeed [rpm]');
-        legend('feedback only','feedback-feedforward')
-        xlabel('time [s]')
-
         % Calculate standard deviation
-        STD_RotSpeed_FB  (i_HWindSpeed,iSample)              = std(FB.RotSpeed  (FB.Time  >t_start));
-        STD_RotSpeed_FBFF(i_HWindSpeed,iSample)              = std(FBFF.RotSpeed(FBFF.Time>t_start));
+        STD_RotSpeed_FB  (iSample)              = std(FB.RotSpeed  (FB.Time  >t_start));
+        STD_RotSpeed_FBFF(iSample)              = std(FBFF.RotSpeed(FBFF.Time>t_start));
 
     end
 
@@ -221,6 +211,10 @@ for i_HWindSpeed    = 1:n_HWindSpeed
     P_mean_FB(i_HWindSpeed)     = mean(P_Seedmean_FB);
     P_mean_FBFF(i_HWindSpeed)   = mean(P_Seedmean_FBFF);
 
+    %Standard Deviation calculation 
+    STD_RotSpeed_FB_seedAve  (i_HWindSpeed) = mean(STD_RotSpeed_FB);
+    STD_RotSpeed_FBFF_seedAve(i_HWindSpeed) = mean(TD_RotSpeed_FBFF);
+
 end
 
 %% Calculate DLC 1.2 
@@ -236,3 +230,17 @@ fprintf('Change in AEP:  %4.1f %%\n',...
     (AEP_FBFF-AEP_FB)/AEP_FB*100)   
 fprintf('Change in DEL:  %4.1f %%\n',...
     (DEL_FBFF-DEL_FB)/DEL_FB*100)   
+
+%% Plot 
+
+% Plot STD Rotor Speed
+figure('Name','Rotor Speed STD mean Value')
+hold on; grid on; box on
+plot(HWindSpeed_vec,       STD_RotSpeed_FB_seedAve);
+plot(HWindSpeed_vec,     STD_RotSpeed_FBFF_seedAve);
+ylabel('STD [rpm]');
+legend('feedback only','feedback-feedforward')
+xlabel('Mean Wind Speed [m/s]')
+
+
+
