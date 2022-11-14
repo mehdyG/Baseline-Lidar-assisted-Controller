@@ -20,10 +20,10 @@ clc;
 addpath('..\MatlabFunctions')
 
 % Parameters (can be adjusted, but will provide different results)
-HWindSpeed_vec      = 3:2:30;                                           % [m/s]         range of wind speeds (operation points)
-V_rated             = 10.59;
-nSample             = 6;                                                % [-]           number of stochastic turbulence field samples
-Seed_vec            = [1:nSample];                                      % [-]           vector of seeds
+HWindSpeed_vec      = 3:2:30;           % [m/s]         range of wind speeds (operation points)
+V_rated             = 10.59;            % [m/s]
+nSample             = 6;                % [-]           number of stochastic turbulence field samples
+Seed_vec            = [1:nSample];      % [-]           vector of seeds
 
 % Postprocessing Parameter for Weibul distribution and Fatigue calculation
 C                               = 2/sqrt(pi)*10;% [m/s] TC I
@@ -88,7 +88,9 @@ end
 % Clean up
 delete(['TurbulentWind\',TurbSimExeFile])
 
-load(SteadyStateFile,'v_0','theta','Omega','x_T','M_g','Info'); % Load Initials
+% Initial values and run time
+load(SteadyStateFile,'v_0','theta','Omega','x_T','M_g','Info'); 
+ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','3630   TMax');  % [s]     Set simulation length Based on David's PHD thesis
 
 %% Processing: run simulations
 
@@ -97,7 +99,6 @@ copyfile(['..\OpenFAST\',FASTexeFile],FASTexeFile)
 copyfile(['..\OpenFAST\',FASTmapFile],FASTmapFile)
 
 % Simulate with all wind fields
-ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','3630   TMax');  % [s]           Set simulation length Based on David's PHD thesis
 
 for i_HWindSpeed    = 1:n_HWindSpeed
     HWindSpeed      = HWindSpeed_vec(i_HWindSpeed);
@@ -129,7 +130,7 @@ for i_HWindSpeed    = 1:n_HWindSpeed
             movefile([SimulationName,'.outb'],FASTresultFile)
         end
 
-        % Run FB+FF if Umean > V_rated
+        % Run FB+FF if HWindSpeed > V_rated
         if HWindSpeed > V_rated
             FASTresultFile      = ['SimulationResults\URef_',num2str(HWindSpeed,'%02d'),...
                 '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
@@ -155,7 +156,7 @@ end
 delete(FASTexeFile)
 delete(FASTmapFile)
 
-% Reset simulation length 
+% Reset .fst file
 ManipulateTXTFile([SimulationName,'.fst'],'3630   TMax','580   TMax');  
 
 %% Postprocessing: evaluate data
@@ -163,7 +164,6 @@ ManipulateTXTFile([SimulationName,'.fst'],'3630   TMax','580   TMax');
 for i_HWindSpeed    = 1:n_HWindSpeed
 
     HWindSpeed      = HWindSpeed_vec(i_HWindSpeed);
-
     for iSample = 1:nSample
 
         % Load data
@@ -173,7 +173,7 @@ for i_HWindSpeed    = 1:n_HWindSpeed
                                     '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
         FB                  = ReadFASTbinaryIntoStruct(FASTresultFile);
 
-        if Umean > V_rated
+        if HWindSpeed > V_rated
             FASTresultFile  = ['SimulationResults\URef_',num2str(HWindSpeed,'%02d'),...
                 '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
             FBFF            = ReadFASTbinaryIntoStruct(FASTresultFile);
@@ -197,14 +197,9 @@ for i_HWindSpeed    = 1:n_HWindSpeed
         legend('feedback only','feedback-feedforward')
         xlabel('time [s]')
 
-%         % Estimate spectra
-%         Fs                                      = 80; % [Hz]  sampling frequenzy, same as in *.fst
-%         [S_RotSpeed_FB_est(i_HWindSpeed,iSample,:),f_est]	= pwelch(detrend(FB.RotSpeed  (FB.Time  >t_start)),vWindow,nOverlap,nFFT,Fs);
-%         [S_RotSpeed_FBFF_est(i_HWindSpeed,iSample,:),~]      = pwelch(detrend(FBFF.RotSpeed(FBFF.Time>t_start)),vWindow,nOverlap,nFFT,Fs);
-% 
-%         % Calculate standard deviation
-%         STD_RotSpeed_FB  (i_HWindSpeed,iSample)              = std(FB.RotSpeed  (FB.Time  >t_start));
-%         STD_RotSpeed_FBFF(i_HWindSpeed,iSample)              = std(FBFF.RotSpeed(FBFF.Time>t_start));
+        % Calculate standard deviation
+        STD_RotSpeed_FB  (i_HWindSpeed,iSample)              = std(FB.RotSpeed  (FB.Time  >t_start));
+        STD_RotSpeed_FBFF(i_HWindSpeed,iSample)              = std(FBFF.RotSpeed(FBFF.Time>t_start));
 
     end
 
@@ -241,37 +236,3 @@ fprintf('Change in AEP:  %4.1f %%\n',...
     (AEP_FBFF-AEP_FB)/AEP_FB*100)   
 fprintf('Change in DEL:  %4.1f %%\n',...
     (DEL_FBFF-DEL_FB)/DEL_FB*100)   
-
-% %% Calculate rotor speed spectra by analytical model
-% 
-% % steady state operating point for 
-% theta_OP                 = 0.2714;
-% Omega_OP                 = 0.7920;
-% v_0_OP                   = 18;
-% f_delay                  = 0.025;
-% ROSCOInFileName          = 'ROSCO_v2d6.IN';
-% RotorPerformanceFile     = 'Cp_Ct_Cq.IEA15MW.txt';
-% LidarInputFileName       = 'MolasNL400_1G_LidarFile.dat';
-% LDPInputFileName         = 'LDP_v1.IN';
-% SpectralModelFileName    = 'LidarRotorSpectra_IEA15MW_MolasNL400.mat';
-% AnalyticalModel          = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP,f_delay,...
-%     ROSCOInFileName,RotorPerformanceFile,LidarInputFileName,LDPInputFileName,SpectralModelFileName);
-% 
-% %% Plot spectra
-% figure('Name','Simulation results')
-% 
-% hold on; grid on; box on
-% p1 = plot(AnalyticalModel.f,AnalyticalModel.S_Omega_r_FB.*(radPs2rpm(1))^2,'--','Color',[0 0.4470 0.7410]);
-% p2 = plot(AnalyticalModel.f,AnalyticalModel.S_Omega_r_FF.*(radPs2rpm(1))^2,'--','Color',[0.8500 0.3250 0.0980]);
-% p3 = plot(f_est ,mean(S_RotSpeed_FB_est,1),'-','Color',[0 0.4470 0.7410]);
-% p4 = plot(f_est ,mean(S_RotSpeed_FBFF_est,1),'-','Color',[0.8500 0.3250 0.0980]);
-% 
-% set(gca,'Xscale','log')
-% set(gca,'Yscale','log')
-% xlabel('frequency [Hz] ')
-% ylabel('Spectra RotSpeed [(rpm)^2Hz^{-1}]')
-% legend([p1 p2 p3 p4],'FB-only Analytical','FBFF Analytical','FB-only Estimated','FBFF Estimated')
-% 
-% % display results
-% fprintf('Change in rotor speed standard deviation:  %4.1f %%\n',...
-%     (mean(STD_RotSpeed_FBFF)/mean(STD_RotSpeed_FB)-1)*100)   
