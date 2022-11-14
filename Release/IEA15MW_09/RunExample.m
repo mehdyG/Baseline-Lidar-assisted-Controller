@@ -21,7 +21,7 @@ addpath('..\MatlabFunctions')
 
 % Parameters (can be adjusted, but will provide different results)
 HWindSpeed_vec      = 3:2:30;           % [m/s]         range of wind speeds (operation points)
-V_rated             = 10.59;            % [m/s]
+V_rated             = 10.59;            % [m/s]         IEA 15 MW Rated wind speed
 nSample             = 6;                % [-]           number of stochastic turbulence field samples
 Seed_vec            = [1:nSample];      % [-]           vector of seeds
 
@@ -91,7 +91,7 @@ delete(['TurbulentWind\',TurbSimExeFile])
 
 % Initial values and run time
 load(SteadyStateFile,'v_0','theta','Omega','x_T','M_g','Info'); 
-ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','60   TMax');  % [s]     Set simulation length Based on David's PHD thesis
+ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','3630   TMax');  % [s]     Set simulation length Based on David's PHD thesis
 
 %% Processing: run simulations
 
@@ -158,7 +158,7 @@ delete(FASTexeFile)
 delete(FASTmapFile)
 
 % Reset .fst file
-ManipulateTXTFile([SimulationName,'.fst'],'60   TMax','580   TMax');  
+ManipulateTXTFile([SimulationName,'.fst'],'3630   TMax','580   TMax');  
 
 %% Postprocessing: Calculate DEL and P_mean
 
@@ -252,6 +252,3 @@ plot(HWindSpeed_vec,     STD_RotSpeed_SeedMean_FBFF);
 ylabel('STD [rpm]');
 legend('feedback only','feedback-feedforward')
 xlabel('Mean Wind Speed [m/s]')
-
-
-
