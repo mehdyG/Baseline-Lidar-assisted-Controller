@@ -58,6 +58,7 @@ end
 if ~exist('SimulationResults','dir')
     mkdir SimulationResults
 end
+
 %% Preprocessing: generate turbulent wind field
 
 % Copy the adequate TurbSim version to the example folder 
@@ -73,8 +74,8 @@ for i_HWindSpeed    = 1:n_HWindSpeed
 
     for iSample = 1:nSample
         Seed                = Seed_vec(iSample);
-        TurbSimInputFile  	= ['TurbulentWind\URef_',num2str(HWindSpeed,'%02d'),'_Seed_',num2str(Seed,'%02d'),'.ipt'];
-        TurbSimResultFile  	= ['TurbulentWind\URef_',num2str(HWindSpeed,'%02d'),'_Seed_',num2str(Seed,'%02d'),'.wnd'];
+        TurbSimInputFile  	= ['TurbulentWind\HWindSpeed_',num2str(HWindSpeed,'%02d'),'_Seed_',num2str(Seed,'%02d'),'.ipt'];
+        TurbSimResultFile  	= ['TurbulentWind\HWindSpeed_',num2str(HWindSpeed,'%02d'),'_Seed_',num2str(Seed,'%02d'),'.wnd'];
         if ~exist(TurbSimResultFile,'file')
             copyfile([TurbSimTemplateFile],TurbSimInputFile)
             ManipulateTXTFile(TurbSimInputFile,'MyHWindSpeed',num2str(HWindSpeed,'%4.1d'));  % adjust HWindSpeed to creat turbulent wind field
@@ -90,7 +91,7 @@ delete(['TurbulentWind\',TurbSimExeFile])
 
 % Initial values and run time
 load(SteadyStateFile,'v_0','theta','Omega','x_T','M_g','Info'); 
-ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','3630   TMax');  % [s]     Set simulation length Based on David's PHD thesis
+ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','60   TMax');  % [s]     Set simulation length Based on David's PHD thesis
 
 %% Processing: run simulations
 
@@ -118,11 +119,11 @@ for i_HWindSpeed    = 1:n_HWindSpeed
 
         % Adjust the InflowWind file
         Seed                = Seed_vec(iSample);
-        WindFileRoot        = ['TurbulentWind\URef_',num2str(HWindSpeed,'%02d'),'_Seed_',num2str(Seed,'%02d')];
+        WindFileRoot        = ['TurbulentWind\HWindSpeed_',num2str(HWindSpeed,'%02d'),'_Seed_',num2str(Seed,'%02d')];
         ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
 
         % Run FB
-        FASTresultFile      = ['SimulationResults\URef_',num2str(HWindSpeed,'%02d'),...
+        FASTresultFile      = ['SimulationResults\HWindSpeed_',num2str(HWindSpeed,'%02d'),...
             '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
         if ~exist(FASTresultFile,'file')
             ManipulateTXTFile('ROSCO_v2d6.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
@@ -132,7 +133,7 @@ for i_HWindSpeed    = 1:n_HWindSpeed
 
         % Run FB+FF if HWindSpeed > V_rated
         if HWindSpeed > V_rated
-            FASTresultFile      = ['SimulationResults\URef_',num2str(HWindSpeed,'%02d'),...
+            FASTresultFile      = ['SimulationResults\HWindSpeed_',num2str(HWindSpeed,'%02d'),...
                 '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
             if ~exist(FASTresultFile,'file')
                 ManipulateTXTFile('ROSCO_v2d6.IN','0 ! FlagLAC','1 ! FlagLAC'); % enable LAC
@@ -157,7 +158,7 @@ delete(FASTexeFile)
 delete(FASTmapFile)
 
 % Reset .fst file
-ManipulateTXTFile([SimulationName,'.fst'],'3630   TMax','580   TMax');  
+ManipulateTXTFile([SimulationName,'.fst'],'60   TMax','580   TMax');  
 
 %% Postprocessing: evaluate data
 
@@ -169,12 +170,12 @@ for i_HWindSpeed    = 1:n_HWindSpeed
         % Load data
         Seed                = Seed_vec(iSample);
 
-        FASTresultFile      = ['SimulationResults\URef_',num2str(HWindSpeed,'%02d'),...
+        FASTresultFile      = ['SimulationResults\HWindSpeed_',num2str(HWindSpeed,'%02d'),...
                                     '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
         FB                  = ReadFASTbinaryIntoStruct(FASTresultFile);
 
         if HWindSpeed > V_rated
-            FASTresultFile  = ['SimulationResults\URef_',num2str(HWindSpeed,'%02d'),...
+            FASTresultFile  = ['SimulationResults\HWindSpeed_',num2str(HWindSpeed,'%02d'),...
                 '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
             FBFF            = ReadFASTbinaryIntoStruct(FASTresultFile);
         else
@@ -196,7 +197,7 @@ for i_HWindSpeed    = 1:n_HWindSpeed
     MyT_FB_SeedAve              = mean (MyT_FB,2);  % Average of MyT time seiries over all seed results, the result will be a time series to calculate DEL
     MyT_FBFF_SeedAve            = mean (MyT_FBFF,2);% ...
 
-    % DEL calculation
+    % DEL calculation, Could be a function
     RainF_FB                    = rainflow(MyT_FB_SeedAve);
     Count_FB                    = RainF_FB(:,1);
     Range_FB                    = RainF_FB(:,2);
