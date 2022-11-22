@@ -14,7 +14,7 @@ False	Echo           					- Echo input data to <RootName>.ech (flag)
 180		YawAngle_N						- Yaw angle between the Nacelle and the lidar coordinate system [deg]
 18    	URef							- Mean u-component wind speed at the reference height [m/s]
 1       GatesPerBeam					- Amount of range gates for each los
-0.025	t_measurement_interval			- Time between each measurement [s]
+0.25	t_measurement_interval			- Time between each measurement [s]
 ---------------------- Measuring points in cartesian coordinates----------------
 0		NumberOfPoints_Cartesian		- Amounts of Points
 X-Tab 	Y-Tab 	Z-Tab
@@ -22,7 +22,7 @@ X-Tab 	Y-Tab 	Z-Tab
 ---------------------- Measuring points in spherical coordinates----------------
 1		NumberOfPoints_Spherical		- Amounts of Points
 Azimuth-Tab     Elevation-Tab	RangeGates-Tab
- +15.0 	  +12.09 	   254.10	  	 
+ 0 	  +21 	   214.23	  	 
 ---------------------- Weighting function (gaussian distribution)---------------
 30		FWHM							- Full width half maximum [m]
 3		PointsToEvaluate				- points evaluated to "integrate" (odd number so there is a point in the peak, >= 3) [-]

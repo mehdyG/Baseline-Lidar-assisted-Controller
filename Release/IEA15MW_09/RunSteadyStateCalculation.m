@@ -13,7 +13,7 @@ addpath('..\MatlabFunctions')
 SaveFlag                = false;    % [true/false]  flag to overwrite SteadyStatesIEA15MW_Monopile_ROSCO_FAST
 PlotTimeSignalsFlag     = true;     % [true/false]  flag to plot time results (might be too much for a lot of simulations)    
 AdjustSteadyStatesFlag  = true;     % [true/false]  flag to load steady states (set false in the first iteration)
-HWindSpeed_vec          = 3:.1:30;  % [m/s]         range of wind speeds (operation points)
+HWindSpeed_vec          = 3:30:30;  % [m/s]         range of wind speeds (operation points)
 n_Rotation              = 3;        % [-]           number of rotations considered
 SteadyStateFile         = 'SteadyStatesIEA15MW_Monopile_ROSCO_FAST.mat';
 Info                    = 'Created by RunSteadyStateCalculation.m of example IEA15MW_09.'; 
@@ -34,7 +34,7 @@ ManipulateTXTFile(InflowFile,...
                     '4                      WindType',...
                     '1                      WindType');
 ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','120   TMax');
-ManipulateTXTFile('ROSCO_15MP.IN','1 ! FlagLAC','0 ! FlagLAC');
+ManipulateTXTFile('ROSCO_v2d6.IN','1 ! FlagLAC','0 ! FlagLAC');
 
 if AdjustSteadyStatesFlag
 	load(SteadyStateFile,'v_0','theta','Omega','x_T');
@@ -93,7 +93,7 @@ ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat',...
                     '1                      WindType',...
                     '4                      WindType');
 ManipulateTXTFile([SimulationName,'.fst'],'120   TMax','580   TMax');
-ManipulateTXTFile('ROSCO_15MP.IN','0 ! FlagLAC','1 ! FlagLAC');
+ManipulateTXTFile('ROSCO_v2d6.IN','0 ! FlagLAC','1 ! FlagLAC');
 
 % Clean up
 delete(FASTexeFile)

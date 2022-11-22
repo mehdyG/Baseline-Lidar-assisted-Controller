@@ -1,0 +1,6 @@
+! Lidar data processing parameters for spinner-based modular single beam lidar. Please do not change the number of lines.
+
+!------- LIDAR TRAJECTORY -----------------------------------------------------
+1	! NumberOfModularLidars	- Number of single beam modular lidars [-]
+21	! AngleToCenterline   	- The angles between the single beam of each modular lidar to the center line of its scanning cone [deg]
+32	! NumberOfMeasurements	- Number of measurements per full scan for wind field reconstruction [-]

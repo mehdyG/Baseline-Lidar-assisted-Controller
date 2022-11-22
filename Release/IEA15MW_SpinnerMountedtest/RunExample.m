@@ -16,7 +16,6 @@ close all;
 clc;
 addpath('..\MatlabFunctions')
 
-
 FASTexeFile         = 'openfast_x64.exe';
 FASTmapFile         = 'MAP_x64.dll';
 SimulationName      = 'IEA-15-240-RWT-Monopile';
@@ -35,35 +34,44 @@ ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot)
 
 % Run FB    
 FASTresultFile      = ['SimulationResults\UniformShearedSteady_URef_18.outb'];
-if ~exist(FASTresultFile,'file')    
+ROSCOresultFile    	= ['SimulationResults\UniformShearedSteady_URef_18.dbg'];
+% if ~exist(FASTresultFile,'file')    
     dos([FASTexeFile,' ',SimulationName,'.fst']);
     movefile([SimulationName,'.outb'],FASTresultFile)
-end
-   
+    movefile([SimulationName,'.RO.dbg'],ROSCOresultFile) % store rosco output file
+% end
+
 % Clean up
 delete(FASTexeFile)
 delete(FASTmapFile)
 
 %% Postprocessing: evaluate data
 
-SimDATA                  = ReadFASTbinaryIntoStruct(FASTresultFile);
+FB                  = ReadFASTbinaryIntoStruct(FASTresultFile);
+R_FB                = ReadROSCOtextIntoStruct(ROSCOresultFile);
 
 % Plot time results
 figure('Name',['LOS speed'])
 hold on; grid on; box on
-plot(SimDATA.Time,SimDATA.VLOS01LI);
+plot(FB.Time,FB.VLOS01LI);
 ylabel('vlos [m/s]');
 xlabel('time [s]')
 
 figure('Name',['RotSpeed'])
 hold on; grid on; box on
-plot(SimDATA.Time,SimDATA.RotSpeed);
+plot(FB.Time,FB.RotSpeed);
 ylabel('RotSpeed [rpm]');
 xlabel('time [s]')
 
-
 figure('Name',['Rotor Azimuth'])
 hold on; grid on; box on
-plot(SimDATA.Time,SimDATA.Azimuth);
+plot(FB.Time,FB.Azimuth);
 ylabel('Azimuth Angle [deg]');
+xlabel('time [s]')
+
+% Plot time results
+figure('Name',['LOS speed'])
+hold on; grid on; box on
+plot(R_FB.Time,R_FB.REWS);
+ylabel('REWS [m/s]');
 xlabel('time [s]')
