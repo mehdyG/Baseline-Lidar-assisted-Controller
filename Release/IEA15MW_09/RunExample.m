@@ -23,13 +23,20 @@ addpath('..\MatlabFunctions')
 HWindSpeed_vec      = 3:2:30;           % [m/s]         range of wind speeds (operation points)
 V_rated             = 10.59;            % [m/s]         IEA 15 MW Rated wind speed
 nSample             = 6;                % [-]           number of stochastic turbulence field samples
-Seed_vec            = [1:nSample];      % [-]           vector of seeds
+seed_Matrix = ones(length(HWindSpeed_vec),nSample);
+n=0;
+for i =1: length(HWindSpeed_vec)  
+    for j=1:nSample
+        n=n+1;
+        seed_Matrix(i,j) = n;
+    end
+end
 
 % Postprocessing Parameter for Weibul distribution and Fatigue calculation
-C                               = 2/sqrt(pi)*10;% [m/s] TC I
-k                               = 2;            % [-]
-WoehlerExponent                 = 4;            % [-]   for steel
-N_REF                           = 2e6/(20*8760);% [-]   fraction of 2e6 in 20 years for 1h
+C                               = 2/sqrt(pi)*10;    % [m/s] TC I
+k                               = 2;                % [-]
+WoehlerExponent                 = 4;                % [-]   for steel
+N_REF                           = 2e6/(20*8760*6);  % [-]   fraction of 2e6 in 20 years for 10min
 Distribution    = k/C*(HWindSpeed_vec/C).^(k-1).*exp(-(HWindSpeed_vec/C).^k);
 Weights         = Distribution/sum(Distribution); % relative frequency
 
@@ -73,7 +80,7 @@ for i_HWindSpeed    = 1:n_HWindSpeed
     HWindSpeed      = HWindSpeed_vec(i_HWindSpeed);
 
     for iSample = 1:nSample
-        Seed                = Seed_vec(iSample);
+        Seed                = seed_Matrix(i_HWindSpeed,iSample);
         TurbSimInputFile  	= ['TurbulentWind\HWindSpeed_',num2str(HWindSpeed,'%02d'),'_Seed_',num2str(Seed,'%02d'),'.ipt'];
         TurbSimResultFile  	= ['TurbulentWind\HWindSpeed_',num2str(HWindSpeed,'%02d'),'_Seed_',num2str(Seed,'%02d'),'.wnd'];
         if ~exist(TurbSimResultFile,'file')
@@ -91,7 +98,7 @@ delete(['TurbulentWind\',TurbSimExeFile])
 
 % Initial values and run time
 load(SteadyStateFile,'v_0','theta','Omega','x_T','M_g','Info'); 
-ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','3630   TMax');  % [s]     Set simulation length Based on David's PHD thesis
+ManipulateTXTFile([SimulationName,'.fst'],'580   TMax','630   TMax');  % [s]     Set simulation length Based on David's PHD thesis
 
 %% Processing: run simulations
 
@@ -118,7 +125,7 @@ for i_HWindSpeed    = 1:n_HWindSpeed
     for iSample = 1:nSample
 
         % Adjust the InflowWind file
-        Seed                = Seed_vec(iSample);
+        Seed                = seed_Matrix(i_HWindSpeed,iSample);
         WindFileRoot        = ['TurbulentWind\HWindSpeed_',num2str(HWindSpeed,'%02d'),'_Seed_',num2str(Seed,'%02d')];
         ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
 
@@ -158,7 +165,7 @@ delete(FASTexeFile)
 delete(FASTmapFile)
 
 % Reset .fst file
-ManipulateTXTFile([SimulationName,'.fst'],'3630   TMax','580   TMax');  
+ManipulateTXTFile([SimulationName,'.fst'],'630   TMax','580   TMax');  
 
 %% Postprocessing: Calculate DEL and P_mean
 
@@ -181,7 +188,7 @@ for i_HWindSpeed    = 1:n_HWindSpeed
     for iSample = 1:nSample
 
         % Load data
-        Seed                = Seed_vec(iSample);
+        Seed                = seed_Matrix(i_HWindSpeed,iSample);
 
         FASTresultFile      = ['SimulationResults\HWindSpeed_',num2str(HWindSpeed,'%02d'),...
                                     '_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
@@ -194,13 +201,24 @@ for i_HWindSpeed    = 1:n_HWindSpeed
             FBFF            = FB;
         end
         P_SeedMean_FB(iSample)      = mean(FB.GenPwr(FB.Time  >t_start));
-        MyT_FB(:,iSample)           = FB.TwrBsMyt(FB.Time  >t_start);
+        MyT_FB(:,iSample)           = FB.TwrBsMyt(FB.Time  >t_start);           % [kN-m]
         P_SeedMean_FBFF(iSample)    = mean(FBFF.GenPwr(FB.Time  >t_start));
-        MyT_FBFF(:,iSample)         = FBFF.TwrBsMyt(FB.Time  >t_start);
+        MyT_FBFF(:,iSample)         = FBFF.TwrBsMyt(FB.Time  >t_start);         % [kN-m]
 
         % Calculate standard deviation
         STD_RotSpeed_FB  (iSample)              = std(FB.RotSpeed  (FB.Time  >t_start));
         STD_RotSpeed_FBFF(iSample)              = std(FBFF.RotSpeed(FBFF.Time>t_start));
+
+        %% New Method of DEL calculation
+        RainF_FB_NM                    = rainflow(MyT_FB(:,iSample));
+        Count_FB_NM                    = RainF_FB_NM(:,1);
+        Range_FB_NM                    = RainF_FB_NM(:,2);
+        DEL_MyT_FB_NM(iSample)         = (sum(Range_FB_NM.^WoehlerExponent.*Count_FB_NM)/ (N_REF) ).^(1/WoehlerExponent);       % [kN-m]
+
+        RainF_FBFF_NM                    = rainflow(MyT_FBFF(:,iSample));
+        Count_FBFF_NM                    = RainF_FBFF_NM(:,1);
+        Range_FBFF_NM                    = RainF_FBFF_NM(:,2);
+        DEL_MyT_FBFF_NM(iSample)         = (sum(Range_FBFF_NM.^WoehlerExponent.*Count_FBFF_NM)/ (N_REF) ).^(1/WoehlerExponent); % [kN-m]
 
     end
 
@@ -226,6 +244,11 @@ for i_HWindSpeed    = 1:n_HWindSpeed
     STD_RotSpeed_SeedMean_FB  (i_HWindSpeed) = mean(STD_RotSpeed_FB);
     STD_RotSpeed_SeedMean_FBFF(i_HWindSpeed) = mean(STD_RotSpeed_FBFF);
 
+    %% New Method
+    DEL_FB_iV_NM(i_HWindSpeed)  = sum(DEL_MyT_FB_NM.^WoehlerExponent*1/6).^(1/WoehlerExponent); % 1/6 is the probability of each 10 min run in 1hr
+    DEL_FBFF_iV_NM(i_HWindSpeed)  = sum(DEL_MyT_FBFF_NM.^WoehlerExponent*1/6).^(1/WoehlerExponent); 
+
+
 end
 
 %% Calculate DLC 1.2 
@@ -234,13 +257,22 @@ AEP_FB  = sum(Weights.*P_mean_FB)*8760;
 DEL_FB  = sum(Weights.*DEL_MyT_FB.^WoehlerExponent).^(1/WoehlerExponent);   
 
 AEP_FBFF  = sum(Weights.*P_mean_FBFF)*8760;                                     
-DEL_FBFF  = sum(Weights.*DEL_MyT_FBFF.^WoehlerExponent).^(1/WoehlerExponent);   
+DEL_FBFF  = sum(Weights.*DEL_MyT_FBFF.^WoehlerExponent).^(1/WoehlerExponent);
+
+%% New Method
+DEL_FB_NM  = sum(Weights.*DEL_FB_iV_NM.^WoehlerExponent).^(1/WoehlerExponent);  
+DEL_FBFF_NM  = sum(Weights.*DEL_FBFF_iV_NM.^WoehlerExponent).^(1/WoehlerExponent);  
 
 % display results
 fprintf('Change in AEP:  %4.1f %%\n',...
     (AEP_FBFF-AEP_FB)/AEP_FB*100)   
 fprintf('Change in DEL:  %4.1f %%\n',...
-    (DEL_FBFF-DEL_FB)/DEL_FB*100)   
+    (DEL_FBFF-DEL_FB)/DEL_FB*100)
+
+% New Method
+
+fprintf('Change in DEL for New Method:  %4.1f %%\n',...
+    (DEL_FBFF_NM-DEL_FB_NM)/DEL_FB_NM*100)   
 
 %% Plot 
 
@@ -250,5 +282,23 @@ hold on; grid on; box on
 plot(HWindSpeed_vec,       STD_RotSpeed_SeedMean_FB);
 plot(HWindSpeed_vec,     STD_RotSpeed_SeedMean_FBFF);
 ylabel('STD [rpm]');
+legend('feedback only','feedback-feedforward')
+xlabel('Mean Wind Speed [m/s]')
+
+% Plot DEL
+figure('Name','DEL mean Value')
+hold on; grid on; box on
+plot(HWindSpeed_vec,       DEL_FB_iV_NM);
+plot(HWindSpeed_vec,     DEL_FBFF_iV_NM);
+ylabel('DEL MyT[% [kN-m]]');
+legend('feedback only','feedback-feedforward')
+xlabel('Mean Wind Speed [m/s]')
+
+% Plot DEL
+figure('Name','DEL mean Value Old')
+hold on; grid on; box on
+plot(HWindSpeed_vec,       DEL_MyT_FB);
+plot(HWindSpeed_vec,     DEL_MyT_FBFF);
+ylabel('DEL MyT [kN-m]');
 legend('feedback only','feedback-feedforward')
 xlabel('Mean Wind Speed [m/s]')
