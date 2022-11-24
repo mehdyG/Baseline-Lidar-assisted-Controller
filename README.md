@@ -39,7 +39,7 @@ We added the following examples:
 - IEA15MW_04: IEA 15 MW floating + realistic wind preview from a nacelle-based lidar system, single wind speed.
 - IEA15MW_05: IEA 15 MW floating + platform damper + perfect wind preview from a single point lidar system.
 - IEA15MW_06: IEA 15 MW floating + platform damper + realistic wind preview from a nacelle-based lidar system, single wind speed.
-- IEA15MW_07: IEA 15 MW floating + realistic wind preview from a nacelle-based lidar system, single wind speed.
+- IEA15MW_07: IEA 15 MW floating + Realistic wind preview from a nacelle-based lidar system, using 4D Mann (evolution) turbulence model, single wind speed.
 - IEA15MW_08: ???
 - IEA15MW_09: IEA 15 MW monopile + realistic wind preview from a nacelle-based lidar system, full DLC 1.2.
 

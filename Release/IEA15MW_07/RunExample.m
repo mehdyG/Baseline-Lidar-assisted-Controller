@@ -1,5 +1,6 @@
-% LAC Test IEA15MW_07:  IEA 15 MW + Realistic wind preview using 4D Mann
-% turbulence model(include turbulence evolution)
+% LAC Test IEA15MW_07:  IEA 15 MW floating + Realistic wind preview from 
+% a nacelle-based lidar system, using 4D Mann (evolution) turbulence model, 
+% single wind speed.
 % Purpose:
 % Here, we use a realistic wind preview to demonstrate that the collective
 % pitch feedforward controller together with the correct filtering provides
@@ -7,7 +8,7 @@
 % and the coherence. In this example, we assume frozen turbulence, only one 
 % 3D turbulence field (y,z,t) at rotor plane is generated.
 % Result:
-% Change in rotor speed standard deviation:  -22.3 %
+% Change in rotor speed standard deviation:  -41.5 %
 % Authors:
 % Feng Guo, Wei Fu, David Schlipf
 % Copyright (c) 2022 Flensburg University of Applied Sciences, WETI
@@ -21,7 +22,7 @@ addpath('..\MatlabFunctions\AnalyticlModel')
 addpath('MannTurbFunctions')
 
 % Seeds (can be adjusted, but will provide different results)
-nSample             = 1;                        % [-]           number of stochastic turbulence field samples
+nSample             = 6;                        % [-]           number of stochastic turbulence field samples
 Seed_vec            = [1:nSample];              % [-]           vector of seeds
 
 % Parameters postprocessing (can be adjusted, but will provide different results)
@@ -43,20 +44,37 @@ end
 if ~exist('SimulationResults','dir')
     mkdir SimulationResults
 end
+
+%% Update Lidar configs
+
+% change Lidar RangeGates
+Rangex 			     = 170; % [m] optmized horizontal range gate for MOLAS
+LidarInputFileName   = 'MolasNL400_1G_LidarFile.dat'; 
+LDPInputFileName     = 'LDP_v1.IN';
+azimuth 			 = GetParametersFromText(LDPInputFileName,'Lidar_Azimuth'); % [deg]
+elevation 		     = GetParametersFromText(LDPInputFileName,'Lidar_Elevation'); % [deg]
+fd_old               = GetParametersFromText(LDPInputFileName,'Lidar_RangeGates');
+fd               	 = Rangex/cos(deg2rad(azimuth(1)))/cos(deg2rad(elevation(1)));
+
+ManipulateTXTFile(LDPInputFileName,...
+                  num2str(fd_old,'%.2f')+"                 		! Lidar_RangeGates'",...
+                  num2str(fd,'%.2f')+"                 		! Lidar_RangeGates'"); 
+ManipulateTXTFile(LidarInputFileName, num2str(fd_old,'%.2f'), num2str(fd,'%.2f'));
+
 %% Preprocessing: generate turbulent wind field
     
 % Copy the adequate TurbSim version to the example folder 
 copyfile(['..\MannTurb4D\',MannTurbExeFile],['TurbulentWind\',MannTurbExeFile])
 copyfile(['..\MannTurb4D\',MannTurbExeFile],['TurbulentWind\',MannTurbTemplateFile])
-      
+
 % Generate all wind fields
 for iSample = 1:nSample        
     Seed             = Seed_vec(iSample);
-    TurbSimResultFile= ['TurbulentWind\Mann_URef_18_Seed_',num2str(Seed,'%02d'),'.wnd'];
+    TurbSimResultFile= ['TurbulentWind\Mann_URef_18_Rangex_',num2str(Rangex,'%03d'),'m_Seed_',num2str(Seed,'%02d'),'.wnd'];
     MannTurb         = MannTurbConfig_IEC('Neutral_IEC1B',18);
 %     MannTurb         = GetMannTensorAndLifeTime(MannTurb,25);
     %MannTurb         = MannTurbConfig('Stable_IEC1A_L30',16);
-    fd               = 240;
+
     MannTurb         = MannTurbFieldConfig('4096x32x40_8m_H150',MannTurb,[0 fd/MannTurb.URef],iSample); % Unfrozen at certain planes!! FG, please adjust df according to your lidar      
     
     if ~exist(TurbSimResultFile,'file')
@@ -64,35 +82,45 @@ for iSample = 1:nSample
     MannTurb         = GetVelocityField(MannTurb,'TurbulentWind',1);
                        MannTurbtoBladedEvo(MannTurb,'TurbulentWind');                   
     % rename file
-    movefile(['TurbulentWind\' MannTurb.Field.CaseName '.wnd'], ['TurbulentWind\Mann_URef_18_Seed_' num2str(Seed,'%02d'),'.wnd']); 
-    movefile(['TurbulentWind\' MannTurb.Field.CaseName '.sum'], ['TurbulentWind\Mann_URef_18_Seed_' num2str(Seed,'%02d'),'.sum']); 
-    movefile(['TurbulentWind\' MannTurb.Field.CaseName '.evo'], ['TurbulentWind\Mann_URef_18_Seed_' num2str(Seed,'%02d'),'.evo']); 
+    movefile(['TurbulentWind\' MannTurb.Field.CaseName '.wnd'], ['TurbulentWind\Mann_URef_18_Rangex_',num2str(Rangex,'%03d'),'m_Seed_', num2str(Seed,'%02d'),'.wnd']); 
+    movefile(['TurbulentWind\' MannTurb.Field.CaseName '.sum'], ['TurbulentWind\Mann_URef_18_Rangex_',num2str(Rangex,'%03d'),'m_Seed_', num2str(Seed,'%02d'),'.sum']); 
+    movefile(['TurbulentWind\' MannTurb.Field.CaseName '.evo'], ['TurbulentWind\Mann_URef_18_Rangex_',num2str(Rangex,'%03d'),'m_Seed_', num2str(Seed,'%02d'),'.evo']); 
     
     delete(['TurbulentWind\' MannTurb.Field.CaseName '.mt4d'])
     delete(['TurbulentWind\' MannTurb.Field.CaseName '.inp'])
     end
-%     TurbSimInputFile  	= ['TurbulentWind\Mann_URef_18_Seed_',num2str(Seed,'%02d'),'.ipt'];
-%     TurbSimResultFile  	= ['TurbulentWind\Mann_URef_18_Seed_',num2str(Seed,'%02d'),'.wnd'];
-%     if ~exist(TurbSimResultFile,'file')
-%         copyfile([TurbSimTemplateFile],TurbSimInputFile)
-%         ManipulateTXTFile(TurbSimInputFile,'MyRandSeed1',num2str(Seed));% adjust seed
-%         dos(['TurbulentWind\',TurbSimExeFile,' ',TurbSimInputFile]);
-%     end
-%     
-%     MannTurb         = MannTurbConfig_IEC('Neutral_IEC1B',18);
-%     Turbulence.alpha_shear = 0.14; % for offshore according to IEC
-%     MannTurb         = GetMannTensorAndLifeTime(MannTurb,25);
-%     %MannTurb         = MannTurbConfig('Stable_IEC1A_L30',16);
-%     MannTurb         = MannTurbFieldConfig('4096x64x64_8m_H150',MannTurb,[0 Lidar.Trajectory.RangeX(1)./MannTurb.URef],iSeed); % Unfrozen at certain planes [0 50 110 170]         
-%     MannTurb         = GenerateMann4DTurb(MannTurb,'TurbResultsMann','MannTurb4D');
-%     MannTurb         = GetVelocityField(MannTurb,'TurbResultsMann',1);
-%                        MannTurbtoBladedEvo(MannTurb,'TurbResultsMann');
+
 end
     
 % Clean up
 delete(['TurbulentWind\',MannTurbExeFile])
 delete(['TurbulentWind\',MannTurbTemplateFile])
 
+%% Calculate rotor speed spectra by analytical model
+
+% steady state operating point for 
+theta_OP                 = 0.2714;
+Omega_OP                 = 0.7920;
+v_0_OP                   = 18;
+f_delay                  = 0.025;
+ROSCOInFileName          = 'ROSCO_v2d6.IN';
+RotorPerformanceFile     = 'Cp_Ct_Cq.IEA15MW.txt';
+SpectralModelFileName    = "LidarRotorSpectra_IEA15MW_MolasNL400_"+num2str(Rangex)+"m_Mann.mat";
+AnalyticalModel          = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP,f_delay,...
+    ROSCOInFileName,RotorPerformanceFile,LidarInputFileName,LDPInputFileName,SpectralModelFileName);
+
+%% Change controller settings
+
+% change T_buffer and f_cutoff of controller
+T_buffer_old             = GetParametersFromText('FFP_v1.IN','T_buffer');
+f_cutoff_old             = GetParametersFromText('FFP_v1.IN','f_cutoff');
+ManipulateTXTFile('FFP_v1.IN', ...
+                  num2str(T_buffer_old,'%.4f')+"    	! T_buffer", ...
+                  num2str(AnalyticalModel.T_buffer,'%.4f')+"    	! T_buffer"); 
+ManipulateTXTFile('FFP_v1.IN', ...
+                  num2str(f_cutoff_old,'%.4f')+"	    ! f_cutoff",...
+                  num2str(AnalyticalModel.f_cutoff,'%.4f')+"	    ! f_cutoff"); 
+              
 %% Processing: run simulations
 
 % Copy the adequate OpenFAST version to the example folder
@@ -104,21 +132,21 @@ for iSample = 1:nSample
     
     % Adjust the InflowWind file
     Seed                = Seed_vec(iSample);
-    WindFileRoot        = ['TurbulentWind\Mann_URef_18_Seed_',num2str(Seed,'%02d')];
+    WindFileRoot        = ['TurbulentWind\Mann_URef_18_Rangex_',num2str(Rangex,'%03d'),'m_Seed_',num2str(Seed,'%02d')];
     ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat','MyFilenameRoot',WindFileRoot);
     
     % Run FB    
-    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
+    FASTresultFile      = ['SimulationResults\URef_18_Rangex_',num2str(Rangex,'%03d'),'m_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
     if ~exist(FASTresultFile,'file')    
-        ManipulateTXTFile('ROSCO_15MP.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
+        ManipulateTXTFile('ROSCO_v2d6.IN','1 ! FlagLAC','0 ! FlagLAC'); % disable LAC
         dos([FASTexeFile,' ',SimulationName,'.fst']);
         movefile([SimulationName,'.outb'],FASTresultFile)
     end
    
     % Run FB+FF    
-    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
+    FASTresultFile      = ['SimulationResults\URef_18_Rangex_',num2str(Rangex,'%03d'),'m_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
     if ~exist(FASTresultFile,'file')    
-        ManipulateTXTFile('ROSCO_15MP.IN','0 ! FlagLAC','1 ! FlagLAC'); % enable LAC
+        ManipulateTXTFile('ROSCO_v2d6.IN','0 ! FlagLAC','1 ! FlagLAC'); % enable LAC
         dos([FASTexeFile,' ',SimulationName,'.fst']);
         movefile([SimulationName,'.outb'],FASTresultFile)
     end    
@@ -126,7 +154,6 @@ for iSample = 1:nSample
     % Reset the InflowWind file again
     ManipulateTXTFile('IEA-15-240-RWT_InflowFile.dat',WindFileRoot,'MyFilenameRoot');
 end
-
 
 % Clean up
 delete(FASTexeFile)
@@ -139,9 +166,9 @@ for iSample = 1:nSample
     % Load data
     Seed                = Seed_vec(iSample);
     
-    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
+    FASTresultFile      = ['SimulationResults\URef_18_Rangex_',num2str(Rangex,'%03d'),'m_Seed_',num2str(Seed,'%02d'),'_FlagLAC_0.outb'];
     FB                  = ReadFASTbinaryIntoStruct(FASTresultFile);
-    FASTresultFile      = ['SimulationResults\URef_18_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
+    FASTresultFile      = ['SimulationResults\URef_18_Rangex_',num2str(Rangex,'%03d'),'m_Seed_',num2str(Seed,'%02d'),'_FlagLAC_1.outb'];
     FBFF                = ReadFASTbinaryIntoStruct(FASTresultFile);
 
     % Plot time results
@@ -164,20 +191,6 @@ for iSample = 1:nSample
 
 end
 
-%% Calculate rotor speed spectra by analytical model
-
-% steady state operating point for 
-theta_OP                 = 0.2714;
-Omega_OP                 = 0.7920;
-v_0_OP                   = 18;
-f_delay                  = 0.025;
-ROSCOInFileName          = 'ROSCO_15MP.IN';
-RotorPerformanceFile     = 'Cp_Ct_Cq.IEA15MW.txt';
-LidarInputFileName       = 'MolasNL400_1G_LidarFile.dat';
-LDPInputFileName         = 'LDP_NL400.IN';
-SpectralModelFileName    = 'LidarRotorSpectra_IEA15MW_MolasNL400.mat';
-AnalyticalModel          = AnalyticalRotorSpeedSpectrum(v_0_OP,theta_OP,Omega_OP,f_delay,...
-    ROSCOInFileName,RotorPerformanceFile,LidarInputFileName,LDPInputFileName,SpectralModelFileName);
 
 %% Plot spectra
 figure('Name','Simulation results')
@@ -190,6 +203,7 @@ p4 = plot(f_est ,mean(S_RotSpeed_FBFF_est,1),'-','Color',[0.8500 0.3250 0.0980])
 
 set(gca,'Xscale','log')
 set(gca,'Yscale','log')
+title("Range "+num2str(Rangex)+"m, \Delta std(\Omega) = "+num2str((mean(STD_RotSpeed_FBFF)/mean(STD_RotSpeed_FB)-1)*100,'%.1f')+"%")
 xlabel('frequency [Hz] ')
 ylabel('Spectra RotSpeed [(rpm)^2Hz^{-1}]')
 legend([p1 p2 p3 p4],'FB-only Analytical','FBFF Analytical','FB-only Estimated','FBFF Estimated')
