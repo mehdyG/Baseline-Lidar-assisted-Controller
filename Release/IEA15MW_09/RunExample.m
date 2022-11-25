@@ -23,14 +23,10 @@ addpath('..\MatlabFunctions')
 HWindSpeed_vec      = 3:2:30;           % [m/s]         range of wind speeds (operation points)
 V_rated             = 10.59;            % [m/s]         IEA 15 MW Rated wind speed
 nSample             = 6;                % [-]           number of stochastic turbulence field samples
-seed_Matrix = ones(length(HWindSpeed_vec),nSample);
-n=0;
-for i =1: length(HWindSpeed_vec)  
-    for j=1:nSample
-        n=n+1;
-        seed_Matrix(i,j) = n;
-    end
-end
+SeedDELPlot_flag    = false;            % [true/false]  flag to Plot DEL vs seeds for each V_mean.
+
+Seed_vec = 1:length(HWindSpeed_vec)*nSample;
+seed_Matrix = (reshape(Seed_vec,nSample,length(HWindSpeed_vec)) )'; % seed matrix to change seed number for all cases
 
 % Postprocessing Parameter for Weibul distribution and Fatigue calculation
 C                               = 2/sqrt(pi)*10;    % [m/s] TC I
@@ -177,6 +173,10 @@ STD_RotSpeed_FBFF           = NaN(1,nSample);
 
 DEL_MyT_FB                  = NaN(1,n_HWindSpeed);
 DEL_MyT_FBFF                = NaN(1,n_HWindSpeed);
+DEL_MyT_FB_NM               = NaN(1,nSample);
+DEL_MyT_FBFF_NM             = NaN(1,nSample);
+DEL_FB_iV_NM                = NaN(1,n_HWindSpeed);
+DEL_FBFF_iV_NM              = NaN(1,n_HWindSpeed);
 P_mean_FB                   = NaN(1,n_HWindSpeed);
 P_mean_FBFF                 = NaN(1,n_HWindSpeed);
 STD_RotSpeed_SeedMean_FB    = NaN(1,n_HWindSpeed);
@@ -209,7 +209,7 @@ for i_HWindSpeed    = 1:n_HWindSpeed
         STD_RotSpeed_FB  (iSample)              = std(FB.RotSpeed  (FB.Time  >t_start));
         STD_RotSpeed_FBFF(iSample)              = std(FBFF.RotSpeed(FBFF.Time>t_start));
 
-        %% New Method of DEL calculation
+        % DEL calculation New Method 
         RainF_FB_NM                    = rainflow(MyT_FB(:,iSample));
         Count_FB_NM                    = RainF_FB_NM(:,1);
         Range_FB_NM                    = RainF_FB_NM(:,2);
@@ -222,10 +222,10 @@ for i_HWindSpeed    = 1:n_HWindSpeed
 
     end
 
+    % DEL calculation Seed Averaging
     MyT_FB_SeedMean              = mean (MyT_FB,2);  % Average of MyT time seiries over all seed results, the result will be a time series to calculate DEL
     MyT_FBFF_SeedMean            = mean (MyT_FBFF,2);% ...
 
-    % DEL calculation, Could be a function
     RainF_FB                    = rainflow(MyT_FB_SeedMean);
     Count_FB                    = RainF_FB(:,1);
     Range_FB                    = RainF_FB(:,2);
@@ -236,6 +236,11 @@ for i_HWindSpeed    = 1:n_HWindSpeed
     Range_FBFF                  = RainF_FBFF(:,2);
     DEL_MyT_FBFF(i_HWindSpeed)  = (sum(Range_FBFF.^WoehlerExponent.*Count_FBFF)/N_REF).^(1/WoehlerExponent);
 
+    % DEL calculation New Method
+    DEL_FB_iV_NM(i_HWindSpeed)  = sum(DEL_MyT_FB_NM.^WoehlerExponent*1/6).^(1/WoehlerExponent); % 1/6 is the probability of each 10 min 6 runs
+    DEL_FBFF_iV_NM(i_HWindSpeed)= sum(DEL_MyT_FBFF_NM.^WoehlerExponent*1/6).^(1/WoehlerExponent); 
+
+
     % Mean Power calculation
     P_mean_FB(i_HWindSpeed)     = mean(P_SeedMean_FB);
     P_mean_FBFF(i_HWindSpeed)   = mean(P_SeedMean_FBFF);
@@ -244,34 +249,43 @@ for i_HWindSpeed    = 1:n_HWindSpeed
     STD_RotSpeed_SeedMean_FB  (i_HWindSpeed) = mean(STD_RotSpeed_FB);
     STD_RotSpeed_SeedMean_FBFF(i_HWindSpeed) = mean(STD_RotSpeed_FBFF);
 
-    %% New Method
-    DEL_FB_iV_NM(i_HWindSpeed)  = sum(DEL_MyT_FB_NM.^WoehlerExponent*1/6).^(1/WoehlerExponent); % 1/6 is the probability of each 10 min run in 1hr
-    DEL_FBFF_iV_NM(i_HWindSpeed)  = sum(DEL_MyT_FBFF_NM.^WoehlerExponent*1/6).^(1/WoehlerExponent); 
-
+    % Plot DEL New Method for evaluation
+    if HWindSpeed > V_rated
+        if SeedDELPlot_flag
+            f1 = figure('Name',['DEL mean Value vs seed V = ',num2str(HWindSpeed),' m/s'] );
+            title(['$V_{mean} = $ ',num2str(HWindSpeed),' m/s'],'Interpreter','latex')
+            hold on; grid on; box on
+            plot(seed_Matrix(i_HWindSpeed,:),       DEL_MyT_FB_NM);
+            plot(seed_Matrix(i_HWindSpeed,:),     DEL_MyT_FBFF_NM);
+            ylabel('DEL MyT [kN-m]');
+            legend(['FB ', 'Mean DEL = ',num2str(DEL_FB_iV_NM(i_HWindSpeed),'%.2e')], ...
+                ['FBFF ','Mean DEL = ',num2str(DEL_FBFF_iV_NM(i_HWindSpeed),'%.2e')])
+            xlabel('Seed number [-]')
+        end
+    end
 
 end
 
-%% Calculate DLC 1.2 
-% Calculate Annual energy production and lifetime-weighted DEL
+% lifetime-weighted DEL  and AEP
+% Annual energy production 
 AEP_FB  = sum(Weights.*P_mean_FB)*8760;                                     
-DEL_FB  = sum(Weights.*DEL_MyT_FB.^WoehlerExponent).^(1/WoehlerExponent);   
+AEP_FBFF  = sum(Weights.*P_mean_FBFF)*8760;
 
-AEP_FBFF  = sum(Weights.*P_mean_FBFF)*8760;                                     
+% lifetime-weighted DEL
+DEL_FB  = sum(Weights.*DEL_MyT_FB.^WoehlerExponent).^(1/WoehlerExponent); 
 DEL_FBFF  = sum(Weights.*DEL_MyT_FBFF.^WoehlerExponent).^(1/WoehlerExponent);
 
-%% New Method
+% lifetime-weighted DEL New Method
 DEL_FB_NM  = sum(Weights.*DEL_FB_iV_NM.^WoehlerExponent).^(1/WoehlerExponent);  
 DEL_FBFF_NM  = sum(Weights.*DEL_FBFF_iV_NM.^WoehlerExponent).^(1/WoehlerExponent);  
 
 % display results
 fprintf('Change in AEP:  %4.1f %%\n',...
     (AEP_FBFF-AEP_FB)/AEP_FB*100)   
-fprintf('Change in DEL:  %4.1f %%\n',...
+fprintf('Change in DEL for seed averaging method is:  %4.1f %%\n',...
     (DEL_FBFF-DEL_FB)/DEL_FB*100)
 
-% New Method
-
-fprintf('Change in DEL for New Method:  %4.1f %%\n',...
+fprintf('Change in DEL for New Method is:  %4.1f %%\n',...
     (DEL_FBFF_NM-DEL_FB_NM)/DEL_FB_NM*100)   
 
 %% Plot 
@@ -286,16 +300,16 @@ legend('feedback only','feedback-feedforward')
 xlabel('Mean Wind Speed [m/s]')
 
 % Plot DEL
-figure('Name','DEL mean Value')
+figure('Name','Mean DEL Value New Method')
 hold on; grid on; box on
 plot(HWindSpeed_vec,       DEL_FB_iV_NM);
 plot(HWindSpeed_vec,     DEL_FBFF_iV_NM);
-ylabel('DEL MyT[% [kN-m]]');
+ylabel('DEL MyT [kN-m]');
 legend('feedback only','feedback-feedforward')
 xlabel('Mean Wind Speed [m/s]')
 
 % Plot DEL
-figure('Name','DEL mean Value Old')
+figure('Name','Mean DEL Value Old Method')
 hold on; grid on; box on
 plot(HWindSpeed_vec,       DEL_MyT_FB);
 plot(HWindSpeed_vec,     DEL_MyT_FBFF);
